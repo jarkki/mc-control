@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <vector>
 #include <tuple>
-#include <boost/range/irange.hpp>
 #include <armadillo>
 #include "utils.hpp"
 #include "distribution.hpp"
@@ -20,18 +19,18 @@ namespace mc{
     template <typename ModelT>
     class DecisionProblem{
     public:
-      DecisionProblem(const ModelT &  model, const vec & actions,  Col<int> nbins, int nsamples){
-        int nactions = actions.size();
+      DecisionProblem(const ModelT &  model, const vec & actions,  uvec nbins, int nsamples){
+        size_t nactions = actions.size();
 
         // Create bins for discretization of each state and
         //  calculate middle values for the bins.
         vector<vec> bins;
         vector<vec> bin_values;
         vec bin_widths(model.nstates);
-        for (int state : range(model.nstates)){
+        for (auto state : range(model.nstates)){
           vec state_bins = linspace(model.state_lim(state,0), model.state_lim(state,1), nbins(state)+1);
           vec values(nbins(state));
-          for(int bin_i : range(nbins(state))){
+          for(auto bin_i : range(nbins(state))){
             values(bin_i) = (state_bins(bin_i) + state_bins(bin_i+1))/2.0;
           }
           bins.push_back(state_bins);
@@ -42,7 +41,7 @@ namespace mc{
         // Discretize the model from a sample
         // Create distribution for each action
         vector<DiscreteDistribution> distributions;
-        for(int action : range(nactions)){
+        for(auto action : range(nactions)){
           cout << "Discretizing action " << action << "..." << endl;
           // Sample for this action
           auto sample = model.sample(actions(action), nsamples);
@@ -51,11 +50,11 @@ namespace mc{
         }
 
         // Index the state space
-        Mat<int> state_space = combinations(nbins);
+        Mat<size_t> state_space = combinations(nbins);
         mat state_values(size(state_space));
-        int state_space_size = state_space.n_rows;
-        for(int i : range(state_space_size)){
-          for(int var_i : range(model.nstates)){
+        size_t state_space_size = state_space.n_rows;
+        for(auto i : range(state_space_size)){
+          for(auto var_i : range(model.nstates)){
             state_values(i,var_i) = bin_values[var_i](i);
           }
         }
@@ -79,7 +78,7 @@ namespace mc{
       vector<vec> bins;
       vector<vec> bin_values;
       vec bin_widths;
-      Mat<int> state_space;
+      Mat<size_t> state_space;
       mat state_values;
       int state_space_size;
     };

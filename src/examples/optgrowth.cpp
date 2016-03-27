@@ -15,6 +15,9 @@ using namespace mc::algorithms;
 
 int main(int argc, char *argv[])
 {
+  // Seed the rng randomly
+  arma_rng::set_seed_random();
+
   // State space
   mat state_lim (1,2);
   state_lim(0,0) = 0.0;
@@ -26,7 +29,7 @@ int main(int argc, char *argv[])
   double df = 0.9;
 
   // Bins for the discrete state space
-  Col<int> nbins = {30};
+  uvec nbins = {30};
 
   // Initialize the actions
   int nactions = 10;
@@ -38,11 +41,11 @@ int main(int argc, char *argv[])
   // Instantiate decision problem
   DecisionProblem<OptimalGrowthModel> problem(model, actions, nbins, 10000);
 
-  // Plot the distributions
-  plot_distr(problem.distributions, problem.actions);
+  // // Plot the distributions
+  // plot_distr(problem.distributions, problem.actions);
 
-  // // Run the MC-ES algorithm
-  // run_mces(problem, 100000);
+  // Run the MC-ES algorithm
+  run_mces(problem, 100000);
 
   return 0;
 }

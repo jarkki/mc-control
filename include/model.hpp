@@ -14,10 +14,10 @@ namespace mc{
     class Model{
 
     };
- 
+
     class OptimalGrowthModel{
     public:
-      OptimalGrowthModel(){};
+      OptimalGrowthModel(){}
       OptimalGrowthModel(double theta_, double alpha_, double df_, mat state_lim_) : state_lim(state_lim_),  nstates(1), theta(theta_), alpha(alpha_), df(df_){
 
 
@@ -26,13 +26,13 @@ namespace mc{
       /*
         Sample from the model, given the action
        */
-      mat sample(const double & action, int n=1) const{
+      mat sample(const double & action, size_t n=1) const{
         // Draw samples from log-norm distribution
         vec z  = arma::exp(mc::utils::norm(n));
 
         mat samples(n,1);
 
-        for(int i : range(n)){
+        for(auto i : range(n)){
           // y = k^alpha * z
           double y = std::pow(action,alpha) * z(i);
           samples(i,0) = y;

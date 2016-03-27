@@ -159,12 +159,12 @@ namespace mc{
       return make_tuple (X,y);
     }
 
-    Mat<int> combinations(const Col<int> & dim){
-      int nvariables = dim.size();
-      int ncombinations = prod(dim);
-      Mat<int> result(ncombinations, nvariables);
+    Mat<size_t> combinations(const uvec & dim){
+      size_t nvariables = dim.size();
+      size_t ncombinations = prod(dim);
+      Mat<size_t> result(ncombinations, nvariables);
 
-      for(int var_i : range(nvariables)){
+      for(auto var_i : range(nvariables)){
         int var_val = 0;
         int var_len;
 
@@ -174,7 +174,7 @@ namespace mc{
           var_len = prod(dim(span(var_i+1,nvariables-1))); 
         }
 
-        for(int j : range(ncombinations)){
+        for(auto j : range(ncombinations)){
           if ((j % (var_len * dim(var_i)) == 0) && j > 0){
             var_val = 0;
           }else if ((j % var_len == 0) && j > 0){

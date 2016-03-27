@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <vector>
 #include <tuple>
-#include <boost/range/irange.hpp>
 #include <armadillo>
 #include "utils.hpp"
 #include "distribution.hpp"
@@ -21,49 +20,83 @@ namespace mc{
 
 
     template<typename ModelT>
-    Col<int> possible_actions(const vec & state, const vec & actions, const ModelT & model){
+    uvec possible_actions(const vec & state, const vec & actions, const ModelT & model){
 
-      int nactions = actions.size();
+      size_t nactions = actions.size();
       vector<int> possible;
-      for(int action : range(nactions)){
+      for(auto action : range(nactions)){
         if(model.constraint(actions(action), state)){
           possible.push_back(action);
         }
       }
-      Col<int> poss = conv_to<Col<int> >::from(possible);
+      uvec poss = conv_to<uvec>::from(possible);
       return poss;
     };
+
+
+    int argmax_q(const mat & Q, const int &state, const uvec & actions){
+      // Calculate the max Q(state)
+      double maxq = max(Q.row(state));
+      // Check if there are several actions with same q-value as maxq
+      size_t nactions = actions.size();
+      vector<size_t> maxq_actions;
+      for(auto a : range(nactions)){
+        if (Q(state,a) == maxq){
+          maxq_actions.push_back(a);
+        }
+      }
+      if(maxq_actions.size() > 1){
+        // Return randomly one of the actions that maximize the Q-value
+        return maxq_actions[randint(maxq_actions.size())];
+      }else{
+        // Return the single action that maximizes the Q-value
+        return maxq_actions[0];
+      }
+    }
 
     /*
       Monte Carlo control with exploring starts and epsilon greedy action selection
      */
     template<typename ProblemT>
     mat run_mces(const ProblemT & problem,
-                 int niterations = 100000,
-                 double epsilon = 0.1){
+                 size_t niterations = 100000){
 
-      int nstates = problem.model.nstates;
-      int nactions = problem.nactions;
+      size_t nstates = problem.state_space_size;
+      size_t nactions = problem.nactions;
 
       // Init the matrices for Q-value, counter and rewards
       mat Q = zeros(nstates,nactions);
       mat counter = zeros(nstates,nactions);
       mat rewards = zeros(nstates,nactions);
 
-      Col<int> poss_actions;
-      int state_var, next_state, action;
-      vec state_value;
+      // Init random policy
+      uvec pol(nstates);
+      for(auto i : range(nstates)){
+        uvec poss = possible_actions(problem.state_values.row(i), problem.actions, problem.model);
+        int poss_len = poss.size();
+        pol(i) = poss(randint(poss_len));
+      }
+      cout << "Pol: " << endl;
+      pol.print();
 
-      for (int iteration : range(niterations)){
+      uvec poss_actions;
+      int state, next_state, action, poss_len;
+      vec state_value, qvals;
 
-        // // Draw random starting state
-        // state_var = randint(nstates);
-        // //state_value = problem.bin_values[state];
+      for (auto iteration : range(niterations)){
 
-        // // Epsilon-greedy action selection
-        // poss_actions = possible_actions(state_value, problem.actions, problem.model);
-        // state_value.print();
-        // poss_actions.print();
+        // Draw random starting state
+        state = randint(nstates);
+        state_value = problem.state_values.row(state);
+
+        // Select random action
+        poss_actions = possible_actions(state_value, problem.actions, problem.model);
+        poss_len = poss_actions.size();
+        action = poss_actions(randint(poss_actions.size()));
+
+        cout << "State " << state << endl;
+        cout << "Action " << action << endl;
+        poss_actions.print();
 
         break;
 
