@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <map>
 #include <tuple>
 #include <armadillo>
 #include "utils.hpp"
@@ -73,15 +74,13 @@ namespace mc{
       uvec pol(nstates);
       for(auto i : range(nstates)){
         uvec poss = possible_actions(problem.state_values.row(i), problem.actions, problem.model);
-        int poss_len = poss.size();
-        pol(i) = poss(randint(poss_len));
+        pol(i) = poss(randint(poss.size()));
       }
-      cout << "Pol: " << endl;
-      pol.print();
 
-      uvec poss_actions;
-      int state, next_state, action, poss_len;
-      vec state_value, qvals;
+      uvec poss_actions, episode_states, episode_actions;
+      int state, action;
+      vec state_value, qvals, episode_rewards;
+      tuple<uvec,uvec,vec> episode_result;
 
       for (auto iteration : range(niterations)){
 
@@ -91,12 +90,11 @@ namespace mc{
 
         // Select random action
         poss_actions = possible_actions(state_value, problem.actions, problem.model);
-        poss_len = poss_actions.size();
         action = poss_actions(randint(poss_actions.size()));
 
-        cout << "State " << state << endl;
-        cout << "Action " << action << endl;
-        poss_actions.print();
+        // Run episode, starting from state, action and then following policy pol
+        episode_result = problem.episode(state, action, pol);
+        tie(episode_states, episode_actions, episode_rewards) = episode_result;
 
         break;
 

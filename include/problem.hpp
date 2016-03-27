@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <map>
 #include <tuple>
 #include <armadillo>
 #include "utils.hpp"
@@ -26,8 +27,8 @@ namespace mc{
         //  calculate middle values for the bins.
         vector<vec> bins;
         vector<vec> bin_values;
-        vec bin_widths(model.nstates);
-        for (auto state : range(model.nstates)){
+        vec bin_widths(model.nvariables);
+        for (auto state : range(model.nvariables)){
           vec state_bins = linspace(model.state_lim(state,0), model.state_lim(state,1), nbins(state)+1);
           vec values(nbins(state));
           for(auto bin_i : range(nbins(state))){
@@ -51,12 +52,21 @@ namespace mc{
 
         // Index the state space
         Mat<size_t> state_space = combinations(nbins);
+
+        // Index the state values
         mat state_values(size(state_space));
         size_t state_space_size = state_space.n_rows;
-        for(auto i : range(state_space_size)){
-          for(auto var_i : range(model.nstates)){
-            state_values(i,var_i) = bin_values[var_i](i);
+        for(auto state_i : range(state_space_size)){
+          for(auto var_i : range(model.nvariables)){
+            state_values(state_i,var_i) = bin_values[var_i](state_i);
           }
+        }
+
+        // Create reverse index on state space, map[statevec] = state_index
+        map<vector<size_t>, size_t> state_index_map;
+        for(auto i : range(state_space_size)){
+          vector<size_t> std_state  = conv_to<vector<size_t> >::from(state_space.row(i));
+          state_index_map[std_state] = i;
         }
 
         this->model = model;
@@ -69,6 +79,36 @@ namespace mc{
         this->state_space = state_space;
         this->state_values = state_values;
         this->state_space_size = state_space_size;
+        this->state_index_map = state_index_map;
+      }
+
+      tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const{
+        size_t T = this->model.episode_length;
+        uvec states(T);
+        uvec actions(T);
+        vec rewards(T);
+        size_t next_state;
+        vector<size_t> std_state;
+
+        states(0) = state;
+        actions(0) = action;
+
+        for(auto t : range(T)){
+          // Sample state space and convert the state armadillo vec to std::vector
+          std_state = conv_to<vector<size_t> >::from(this->distributions[action].sample());
+          // Get the state index from the state-index map
+          next_state = this->state_index_map.at(std_state);
+          // Calculate reward for being in state, taking action and ending in next_state
+          rewards(t) = this->model.reward(this->state_values.row(state), this->actions(action), this->state_values.row(next_state));
+          // If not at the last time period
+          if (t < (T-1)){
+            state = next_state;
+            action = pol(state); // Choose new action from policy
+            states(t+1) = state; // Add to vectors
+            actions(t+1) = action;
+          }
+        }
+        return make_tuple(states,actions,rewards);
       }
 
       ModelT model;
@@ -81,6 +121,7 @@ namespace mc{
       Mat<size_t> state_space;
       mat state_values;
       int state_space_size;
+      map<vector<size_t>, size_t> state_index_map;
     };
 
   }

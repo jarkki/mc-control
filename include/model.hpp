@@ -1,5 +1,6 @@
 #pragma once
 
+#include <math.h>
 #include <armadillo>
 #include "utils.hpp"
 
@@ -18,7 +19,7 @@ namespace mc{
     class OptimalGrowthModel{
     public:
       OptimalGrowthModel(){}
-      OptimalGrowthModel(double theta_, double alpha_, double df_, mat state_lim_) : state_lim(state_lim_),  nstates(1), theta(theta_), alpha(alpha_), df(df_){
+      OptimalGrowthModel(double theta_, double alpha_, double df_, mat state_lim_) : episode_length(1), state_lim(state_lim_),  nvariables(1), theta(theta_), alpha(alpha_), df(df_){
 
 
       };
@@ -52,9 +53,17 @@ namespace mc{
         return ((this->state_lim[0] <= action) && (action <= state(0))) ? true : false;
       }
 
+      double U(const double & c) const {
+        return (1.0 - exp(- this->theta * c));
+      }
+
+      double reward (const vec & state_value, const double & action_value, const vec & next_state_value) const{
+        return U(state_value(0) - action_value) + this->df * U(next_state_value(0));
+      }
+
+      size_t episode_length;
       mat state_lim;
-      int nstates;
-      double U(double c);
+      int nvariables;
       double theta;
       double alpha;
       double df;

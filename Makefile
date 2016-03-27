@@ -5,7 +5,7 @@ CXX := clang++
 ARMADILLO_INCLUDE_DIR := /usr/local/Cellar/armadillo/6.400.3_1/include
 PROJECT_INCLUDE_DIR := ./include
 BOOST_INLUDE_DIR := /usr/local/Cellar/boost/1.60.0_1/include
-INCLUDE_DIRS := -I$(ARMADILLO_INCLUDE_DIR)  -I$(PROJECT_INCLUDE_DIR)
+INCLUDE_DIRS := -I$(ARMADILLO_INCLUDE_DIR)  -I$(PROJECT_INCLUDE_DIR) -I$(BOOST_INLUDE_DIR)
 CXXFLAGS := -Wall -g -std=c++11
 
 # Libraries to link and library directories

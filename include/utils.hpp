@@ -1,6 +1,8 @@
 #pragma once
 
 #include <tuple>
+#include <tuple>
+#include <boost/range/irange.hpp>
 #include "armadillo"
 
 using namespace std;
@@ -21,7 +23,7 @@ namespace mc{
 
     }
 
-    vec uniform(const int n){
+    vec uniform(const size_t n){
       return randu(n);
     }
 
@@ -71,12 +73,23 @@ namespace mc{
       return u(0);
     }
 
-    vector<size_t> range(const size_t & n){
-      vector<size_t> v(n);
-      for(size_t i = 0; i < n; ++i){
-        v[i] = i;
-      }
-      return v;
+    // vector<size_t> range(const size_t & n){
+    //   vector<size_t> v(n);
+    //   for(size_t i = 0; i < n; ++i){
+    //     v[i] = i;
+    //   }
+    //   return v;
+    // }
+
+    // template<class size_t>
+    // boost::iterator_range< boost::range_detail::integer_iterator<size_t> > range(size_t  n)
+    // {
+    //   return boost::irange(0, n);
+    // }
+
+    template <typename T>
+    auto range(T upper) -> decltype(boost::irange(static_cast<T>(0), upper)) {
+      return boost::irange(static_cast<T>(0), upper);
     }
 
     Mat<size_t> combinations(const uvec & dim){
@@ -91,7 +104,7 @@ namespace mc{
         if (var_i == nvariables-1){
           var_len = 1; // Last variable
         }else{
-          var_len = prod(dim(span(var_i+1,nvariables-1))); 
+          var_len = prod(dim(span(var_i+1,nvariables-1)));
         }
 
         for(auto j : range(ncombinations)){
