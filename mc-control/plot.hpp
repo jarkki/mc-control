@@ -44,8 +44,8 @@ namespace mc{
 
       // Write state and action values to arrays
       file << "state_values = []" << endl;
-      for(auto state : range(Q.n_rows)){
-        file << "state_values.append(" << problem.state_values(state) << ")" << endl;
+      for(auto bin_x : problem.bins[0]){
+        file << "state_values.append(" << bin_x << ")" << endl;
       }
 
       file << "action_values = []" << endl;
