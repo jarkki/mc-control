@@ -30,7 +30,7 @@ namespace mc{
       cum_prob(span(1, n))= cumsum(densities);
       double u = uniform();
       for(auto i : range(n)){
-        if(u < cum_prob(i+1)){
+        if(u <= cum_prob(i+1)){
           return i;
         }
       }
@@ -66,7 +66,7 @@ namespace mc{
       // There might be several actions that give the max Q-value
       vector<size_t> maxq_actions;
 
-      // Use a subset of actions
+      // Calculate the max Q-value for this state and actions possible from here
       double maxq = Q(state, possible_a(0));
       for(auto i : range(1,possible_a.size())){
         if(Q(state,possible_a(i)) > maxq){
@@ -80,11 +80,11 @@ namespace mc{
         }
       }
 
+      // Return the single action that maximizes the Q-value or
+      //  randomly one of the actions that maximize the Q-value.
       if(maxq_actions.size() > 1){
-        // Return randomly one of the actions that maximize the Q-value
         return maxq_actions[randint(maxq_actions.size())];
       }else{
-        // Return the single action that maximizes the Q-value
         return maxq_actions[0];
       }
     }
@@ -158,7 +158,7 @@ namespace mc{
           pol(state) = argmax_q(Q,state,poss_a);
         }
         // Print info
-        if(iteration % 10000 == 0){
+        if(iteration % 10000 == 0 && iteration > 0){
           cout << "Iteration " << iteration << endl;
         }
 

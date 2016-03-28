@@ -42,15 +42,14 @@ namespace mc{
         // Discretize the model from a sample
         // Create distribution for each action
         vector<DiscreteDistribution> distributions;
-        for(auto action : range(nactions)){
-          cout << "Discretizing action " << action << "..." << endl;
-          // Sample for this action
-          auto sample = model.sample_transitions(actions(action), nsamples);
+        for(auto action : actions){
+          // Sample the transition function with this action
+          auto sample = model.sample_transitions(action, nsamples);
           DiscreteDistribution distr(sample, bins, bin_values);
           distributions.push_back(distr);
         }
 
-        // Index the state space
+        // Index the state space with all possible combinations of state variables
         Mat<size_t> state_space = combinations(nbins);
 
         // Index the state values
@@ -62,7 +61,10 @@ namespace mc{
           }
         }
 
-        // Create reverse index on state space, map[statevec] = state_index
+        // Create reverse index on state space with std::map, so after sampling state variables
+        //   you can find the index of the state variables. 
+        // Use like map[statevec] = state_index
+        // (std::vector can be used as a key in a map, arma::vec cannot)
         map<vector<size_t>, size_t> state_index_map;
         for(auto i : range(state_space_size)){
           vector<size_t> std_state  = conv_to<vector<size_t> >::from(state_space.row(i));
@@ -84,6 +86,7 @@ namespace mc{
 
       /*
         Complete one episode of the problem.
+        Return all states, actions and returns occurring during the episode.
        */
       virtual tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const = 0;
 

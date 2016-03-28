@@ -41,8 +41,9 @@ struct OptimalGrowthModel : Model{
   }
 
   /*
-    Transition function doesn't depend on state, only on action
-    y = k^alpha * z
+    Transition function doesn't depend on state, only on action:
+      y = k^alpha * z,
+    where k is the action.
    */
   vec transition(const vec & state, const double & action) const{
     // Draw a sample from log-norm distribution
@@ -94,13 +95,14 @@ public:
 
   /*
     Complete one episode of the problem.
-    This is infinite horizon problem, so the length of the episode is 1 and the policy is not used.
+    This is infinite horizon problem, so the length of the episode is 1.
+    For the MC-ES algorithm, the policy is not used.
   */
   tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const{
 
     uvec states(1);
     uvec actions(1);
-    vec rewards(1);
+    vec returns(1);
     size_t next_state;
     vector<size_t> std_state_vec;
 
@@ -114,9 +116,9 @@ public:
     next_state = this->state_index_map.at(std_state_vec);
 
     // Calculate reward for being in state, taking action and ending in next_state
-    rewards(0) = this->model.reward(this->state_values.row(state), this->actions(action), this->state_values.row(next_state));
+    returns(0) = this->model.reward(this->state_values.row(state), this->actions(action), this->state_values.row(next_state));
 
-    return make_tuple(states,actions,rewards);
+    return make_tuple(states,actions,returns);
   }
 
 };
@@ -124,7 +126,7 @@ public:
 
 int main(int argc, char *argv[])
 {
-  // Seed the rng randomly
+  // Seed the rng (randomly)
   arma_rng::set_seed_random();
 
   // State space limits
@@ -149,7 +151,7 @@ int main(int argc, char *argv[])
   // Run the MC-ES algorithm
   mat Q;
   uvec pol;
-  tie(Q,pol) = run_mc_es(problem, 1000000);
+  tie(Q,pol) = run_mc_es(problem, 5000000);
 
   // Plot the Q-values
   plot_q(Q,pol,problem);
