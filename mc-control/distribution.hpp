@@ -99,11 +99,15 @@ namespace mc{
         auto u = uniform(this->nvariables);
         for( auto variable : range(this->nvariables)){
           for(auto bin_i : range(this->nbins[variable])){
-            if((this->cumul_distrs[variable](bin_i) <= u(variable)) &&
-               (u(variable) < this->cumul_distrs[variable](bin_i+1))){
+            if(u(variable) < this->cumul_distrs[variable](bin_i+1)){
               state[variable] = bin_i;
               break;
             }
+            // if((this->cumul_distrs[variable](bin_i) <= u(variable)) &&
+            //    (u(variable) < this->cumul_distrs[variable](bin_i+1))){
+            //   state[variable] = bin_i;
+            //   break;
+            // }
           }
         }
         return state;

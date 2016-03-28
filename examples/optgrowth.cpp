@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
   // Run the MC-ES algorithm
   mat Q;
   uvec pol;
-  tie(Q,pol) = run_mces(problem, 1000000);
+  tie(Q,pol) = run_mc_es(problem, 1000000);
 
   // Plot the Q-values
   plot_q(Q,pol,problem);

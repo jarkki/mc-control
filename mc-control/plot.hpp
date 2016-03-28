@@ -122,7 +122,7 @@ namespace mc{
       file << "coli = 0" << endl;
 
       // For each action
-      int nactions = actions.size();
+      size_t nactions = actions.size();
       for (auto action : range(nactions)){
         file << "bins = []" << endl;
         file << "density = []" << endl;
