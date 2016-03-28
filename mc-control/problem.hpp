@@ -45,7 +45,7 @@ namespace mc{
         for(auto action : range(nactions)){
           cout << "Discretizing action " << action << "..." << endl;
           // Sample for this action
-          auto sample = model.sample(actions(action), nsamples);
+          auto sample = model.sample_transitions(actions(action), nsamples);
           DiscreteDistribution distr(sample, bins, bin_values);
           distributions.push_back(distr);
         }
@@ -90,13 +90,13 @@ namespace mc{
       ModelT model;
       vector<DiscreteDistribution> distributions;
       vec actions;
-      int nactions;
+      size_t nactions;
       vector<vec> bins;
       vector<vec> bin_values;
       vec bin_widths;
       Mat<size_t> state_space;
       mat state_values;
-      int state_space_size;
+      size_t state_space_size;
       map<vector<size_t>, size_t> state_index_map;
     };
 

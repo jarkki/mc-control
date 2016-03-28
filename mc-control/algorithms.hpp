@@ -65,6 +65,9 @@ namespace mc{
 
     /*
       Monte Carlo control with exploring starts and epsilon greedy action selection
+
+      TODO: Change rewards to returns
+
      */
     template<typename ProblemT>
     tuple<mat,uvec> run_mces(const ProblemT & problem,

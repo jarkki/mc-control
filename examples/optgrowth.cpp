@@ -1,4 +1,5 @@
 #include <armadillo>
+#include <math.h>
 #include "mc-control/utils.hpp"
 #include "mc-control/model.hpp"
 #include "mc-control/distribution.hpp"
@@ -15,57 +16,77 @@ using namespace mc::problem;
 using namespace mc::algorithms;
 using namespace mc::plot;
 
-class OptimalGrowthModel : Model{
-public:
-  OptimalGrowthModel(){}
-  OptimalGrowthModel(double theta_, double alpha_, double df_, mat state_lim_) : episode_length(1), state_lim(state_lim_),  nvariables(1), theta(theta_), alpha(alpha_), df(df_){};
+/*
+  Transition function
+
+  y = k^alpha * z,
+
+  where k is the action (amount to save) and z is lognormal shock
+*/
+struct OptimalGrowthModel : Model{
+
+  size_t nvariables;
+  double theta; // Utility func parameter
+  double alpha; // Transition func parameter
+  double df;    // Discount factor
+  mat state_lim;// Limits of state space
+
+  OptimalGrowthModel(){} // Default constructor
+  OptimalGrowthModel(mat state_lim, double theta = 0.5, double alpha = 0.8, double df = 0.9){
+    this->nvariables = 1;
+    this->theta = theta;
+    this->alpha = alpha;
+    this->df = df;
+    this->state_lim = state_lim;
+  }
 
   /*
-    Sample from the model, given the action
-  */
-  mat sample(const double & action, size_t n=1) const{
-    // Draw samples from log-norm distribution
-    vec z  = arma::exp(mc::utils::norm(n));
-
-    mat samples(n,1);
-
-    for(auto i : range(n)){
-      // y = k^alpha * z
-      double y = std::pow(action,alpha) * z(i);
-      samples(i,0) = y;
-    }
-    return samples;
+    Transition function doesn't depend on state, only on action
+    y = k^alpha * z
+   */
+  vec transition(const vec & state, const double & action) const{
+    // Draw a sample from log-norm distribution
+    vec next_state(1);
+    next_state(0) = std::pow(action,this->alpha) * std::exp(mc::utils::norm());
+    return next_state;
   };
 
   /*
-    Sample from the model, given the state and action.
-    This model doesn't depend on the previous state, so the state is ignored.
-  */
-  mat sample(const vec & state, const double & action, int n=1) const {
-    return this->sample(action,n);
+    Create a sample of transitions, given the action.
+   */
+  mat sample_transitions(const double & action, size_t n) const{
+
+    mat samples(n,1);
+    vec state(1); // Doesn't depend on state, but have to pass state anyway
+    for(auto i : range(n)){
+      samples(i,0) = this->transition(state, action)(0);
+    }
+    return samples;
   }
 
+  /*
+    Returns true if it is possible to take the action from this state.
+  */
   bool constraint(const double & action, const vec & state) const {
     return ((this->state_lim[0] <= action) && (action <= state(0))) ? true : false;
   }
 
-  double U(const double & c) const {
-    return (1.0 - exp(- this->theta * c));
-  }
-
+  /*
+    Reward for being in state, taking action and ending in next_state
+  */
   double reward (const vec & state_value, const double & action_value, const vec & next_state_value) const{
     return U(state_value(0) - action_value) + this->df * U(next_state_value(0));
   }
 
-  size_t episode_length;
-  mat state_lim;
-  int nvariables;
-  double theta;
-  double alpha;
-  double df;
+  /*
+    Utility function.
+  */
+  double U(const double & c) const {
+    return (1.0 - exp(- this->theta * c));
+  }
+
 
 };
-
 
 class OptimalGrowthProblem : public DecisionProblem<OptimalGrowthModel>{
 public:
@@ -100,30 +121,24 @@ public:
 
 };
 
+
 int main(int argc, char *argv[])
 {
   // Seed the rng randomly
   arma_rng::set_seed_random();
 
-  // State space
-  mat state_lim (1,2);
-  state_lim(0,0) = 0.0;
-  state_lim(0,1) = 8.0;
-
-  // Model parameters
-  double theta = 0.5;
-  double alpha = 0.8;
-  double df = 0.9;
-
-  // Bins for the discrete state space
-  uvec nbins = {50};
-
-  // Initialize the actions
-  int nactions = 50;
-  vec actions = linspace(state_lim(0), state_lim(1), nactions);
+  // State space limits
+  mat state_lim = {{0.0, 8.0},};
 
   // Instantiate the  model
-  OptimalGrowthModel model(theta, alpha,  df, state_lim);
+  OptimalGrowthModel model(state_lim);
+
+  // Number of bins for the discrete state space
+  uvec nbins = {30};
+
+  // Initialize the actions
+  int nactions = 20;
+  vec actions = linspace(state_lim(0,0), state_lim(0,1), nactions);
 
   // Instantiate decision problem
   OptimalGrowthProblem problem(model, actions, nbins, 10000);
@@ -134,11 +149,10 @@ int main(int argc, char *argv[])
   // Run the MC-ES algorithm
   mat Q;
   uvec pol;
-  tie(Q,pol) = run_mces(problem, 10000000);
+  tie(Q,pol) = run_mces(problem, 1000000);
 
   // Plot the Q-values
   plot_q(Q,pol,problem);
-
 
   return 0;
 }

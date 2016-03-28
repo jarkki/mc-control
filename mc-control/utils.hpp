@@ -51,10 +51,16 @@ namespace mc{
 
     }
 
-    vec norm(const int n){
+    vec norm(const size_t n){
       // Matrix of x ~ N(0,1) size (n_rows,n_cols)
       return randn(n);
 
+    }
+
+    double norm(){
+      // Matrix of x ~ N(0,1) size (n_rows,n_cols)
+      vec n = randn(1); 
+      return n(0);
     }
 
     int randint(int a, int b){
@@ -62,7 +68,7 @@ namespace mc{
       return randi<vec>(1,distr_param(a,b))(0);
     }
 
-    int randint(int n){
+    int randint(size_t n){
       // Random integer in [0,n-1]
       return randi<vec>(1,distr_param(0,n-1))(0);
     }
@@ -98,8 +104,8 @@ namespace mc{
       Mat<size_t> result(ncombinations, nvariables);
 
       for(auto var_i : range(nvariables)){
-        int var_val = 0;
-        int var_len;
+        size_t var_val = 0;
+        size_t var_len;
 
         if (var_i == nvariables-1){
           var_len = 1; // Last variable

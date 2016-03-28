@@ -109,34 +109,6 @@ namespace mc{
         return state;
       }
 
-      // Mat<int> sample(size_t n=1){
-      //   Mat<int> sample_indices(n,this->nvariables);
-      //   for(auto i : range(n)){
-      //     auto u = uniform(this->nvariables);
-      //     for(auto variable : range(this->nvariables)){
-      //       for(auto bin_i : range(this->nbins[variable])){
-      //         if((this->cumul_distrs[variable](bin_i) <= u(variable)) &&
-      //            (u(variable) < this->cumul_distrs[variable](bin_i+1))){
-      //           sample_indices(i,variable) = bin_i;
-      //         }}}}
-      //   return sample_indices;
-
-      // };
-
-      // mat sample_values(int n=1){
-      //   mat sample_values(n,this->nstates);
-      //   for(auto i : range(n)){
-      //     auto u = uniform(this->nstates);
-      //     for(auto state : range(this->nstates)){
-      //       for(auto bin_i : range(this->nbins[state])){
-      //         if((this->cumul_distrs[state](bin_i) <= u(state)) &&
-      //            (u(state) < this->cumul_distrs[state](bin_i+1))){
-      //           sample_values(i,state) = this->bin_values[state](bin_i);
-      //         }}}}
-
-      //   return sample_values;
-      // };
-
       size_t nvariables;
       vector<size_t> nbins;
       vector<vec> cumul_distrs;
