@@ -1,6 +1,6 @@
 CXX := clang++
-CXXFLAGS := -Wall -g -std=c++11
-#CXXFLAGS := -DNDEBUG -O2 -std=c++11
+CXXFLAGS := -DNDEBUG -O2 -std=c++11
+DEBUGFLAGS := -Wall -g -std=c++11
 
 # Header directories
 PROJECT_INCLUDE_DIR := ./
@@ -21,7 +21,10 @@ all: optgrowth
 optgrowth: $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) $(LDFLAGS) -o optgrowth examples/optgrowth.cpp $(LDLIBS)
 
-clean:
+optgrowth_debug: $(DEPS)
+	$(CXX) $(DEBUGFLAGS) $(INCLUDE_DIRS) $(LDFLAGS) -o optgrowth examples/optgrowth.cpp $(LDLIBS)
+
+clean_og:
 	rm optgrowth
 	rm -rf optgrowth.dSYM
 
