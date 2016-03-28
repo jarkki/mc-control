@@ -2,7 +2,7 @@
 
 #include <math.h>
 #include <armadillo>
-#include "utils.hpp"
+#include "mc-control/utils.hpp"
 
 using namespace std;
 using namespace arma;

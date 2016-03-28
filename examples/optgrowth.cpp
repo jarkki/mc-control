@@ -1,10 +1,10 @@
 #include <armadillo>
-#include "utils.hpp"
-#include "model.hpp"
-#include "distribution.hpp"
-#include "problem.hpp"
-#include "algorithms.hpp"
-#include "plot.hpp"
+#include "mc-control/utils.hpp"
+#include "mc-control/model.hpp"
+#include "mc-control/distribution.hpp"
+#include "mc-control/problem.hpp"
+#include "mc-control/algorithms.hpp"
+#include "mc-control/plot.hpp"
 
 using namespace std;
 using namespace arma;

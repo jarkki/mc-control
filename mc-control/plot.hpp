@@ -4,9 +4,9 @@
 #include <vector>
 #include <tuple>
 #include <armadillo>
-#include "utils.hpp"
-#include "distribution.hpp"
-#include "problem.hpp"
+#include "mc-control/utils.hpp"
+#include "mc-control/distribution.hpp"
+#include "mc-control/problem.hpp"
 
 using namespace std;
 using namespace arma;
