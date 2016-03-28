@@ -35,17 +35,25 @@ namespace mc{
     };
 
 
-    int argmax_q(const mat & Q, const int &state, const uvec & actions){
-      // Calculate the max Q(state)
-      double maxq = max(Q.row(state));
-      // Check if there are several actions with same q-value as maxq
-      size_t nactions = actions.size();
+    int argmax_q(const mat & Q, const int &state, const uvec & possible_a){
+
+      // There might be several actions that give the max Q-value
       vector<size_t> maxq_actions;
-      for(auto a : range(nactions)){
-        if (Q(state,a) == maxq){
-          maxq_actions.push_back(a);
+
+      // Use a subset of actions
+      double maxq = Q(state, possible_a(0));
+      for(auto i : range(possible_a.size())){
+        if(Q(state,possible_a(i)) > maxq){
+          maxq = Q(state,possible_a(i));
         }
       }
+      // Check if there are several actions with same q-value as maxq
+      for(auto i : range(possible_a.size())){
+        if (Q(state,possible_a(i)) == maxq){
+          maxq_actions.push_back(possible_a(i));
+        }
+      }
+
       if(maxq_actions.size() > 1){
         // Return randomly one of the actions that maximize the Q-value
         return maxq_actions[randint(maxq_actions.size())];
@@ -59,8 +67,8 @@ namespace mc{
       Monte Carlo control with exploring starts and epsilon greedy action selection
      */
     template<typename ProblemT>
-    mat run_mces(const ProblemT & problem,
-                 size_t niterations = 100000){
+    tuple<mat,uvec> run_mces(const ProblemT & problem,
+                             size_t niterations = 100000){
 
       size_t nstates = problem.state_space_size;
       size_t nactions = problem.nactions;
@@ -84,7 +92,7 @@ namespace mc{
       tuple<uvec,uvec,vec> episode_result;
 
       for (auto iteration : range(niterations)){
-        // Occurrences of state, action pairs in the episode
+        // Occurrences of state, action pairs in the episode (init to zero)
         occurrences = zeros<Mat<int> >(nstates,nactions);
 
         // Draw random starting state
@@ -116,13 +124,18 @@ namespace mc{
           }
         }
 
+        // Update policy
+        for(auto state : episode_states){
+          uvec poss_a = possible_actions(problem.state_values.row(state), problem.actions, problem.model);
+          pol(state) = argmax_q(Q,state,poss_a);
+        }
         // Print info
         if(iteration % 10000 == 0){
           cout << "Iteration " << iteration << endl;
         }
 
       }
-      return Q;
+      return make_tuple(Q, pol);
     }
   }
 }

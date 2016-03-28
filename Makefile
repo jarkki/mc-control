@@ -1,5 +1,6 @@
 CXX := clang++
 CXXFLAGS := -Wall -g -std=c++11
+#CXXFLAGS := -DNDEBUG -O2 -std=c++11
 
 # Header directories
 PROJECT_INCLUDE_DIR := ./

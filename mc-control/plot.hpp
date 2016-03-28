@@ -18,7 +18,7 @@ namespace mc{
   namespace plot{
 
     template<typename ProblemT>
-    void plot_q(const mat & Q, const ProblemT & problem){
+    void plot_q(const mat & Q, const uvec & pol, const ProblemT & problem){
 
       cout << "Plotting the Q-values!" << endl;
 
@@ -64,6 +64,23 @@ namespace mc{
       file << "X,Y = np.meshgrid(state_values, action_values)" << endl;
       file << "plt.pcolormesh(X,Y,Q.T)" << endl;
 
+      // Plot the optimal policy pol
+      vec pol_x = problem.state_values;
+      vec pol_y(pol.size());
+      for(auto i : range(pol.size())){
+        pol_y(i) = problem.actions(pol(i));
+      }
+      file << "pol_x = []" << endl;
+      file << "pol_y = []" << endl;
+      for(auto i : range(pol.size())){
+        file << "pol_x.append(" << pol_x(i) << ")" << endl;
+        file << "pol_y.append(" << pol_y(i) << ")" << endl;
+      }
+
+      file << "plt.plot(pol_x,pol_x)" << endl;
+      file << "plt.plot(pol_x,pol_y)" << endl;
+
+      // Title and labels
       file << "plt.xlabel('State')" << endl;
       file << "plt.ylabel('Action')" << endl;
       file << "plt.title('Q-values')" << endl;

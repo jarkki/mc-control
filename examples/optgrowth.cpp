@@ -132,10 +132,13 @@ int main(int argc, char *argv[])
   // plot_distr(problem.distributions, problem.actions);
 
   // Run the MC-ES algorithm
-  mat Q = run_mces(problem, 5000000);
+  mat Q;
+  uvec pol;
+  tie(Q,pol) = run_mces(problem, 10000000);
 
   // Plot the Q-values
-  plot_q(Q,problem);
+  plot_q(Q,pol,problem);
+
 
   return 0;
 }
