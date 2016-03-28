@@ -69,6 +69,7 @@ namespace mc{
       mat Q = zeros(nstates,nactions);
       mat counter = zeros(nstates,nactions);
       mat rewards = zeros(nstates,nactions);
+      Mat<int> occurrences;
 
       // Init random policy
       uvec pol(nstates);
@@ -83,6 +84,8 @@ namespace mc{
       tuple<uvec,uvec,vec> episode_result;
 
       for (auto iteration : range(niterations)){
+        // Occurrences of state, action pairs in the episode
+        occurrences = zeros<Mat<int> >(nstates,nactions);
 
         // Draw random starting state
         state = randint(nstates);
@@ -96,7 +99,22 @@ namespace mc{
         episode_result = problem.episode(state, action, pol);
         tie(episode_states, episode_actions, episode_rewards) = episode_result;
 
-        break;
+        // For each state, action pair in episode
+        for(auto i : range(episode_states.size())){
+          size_t s = episode_states(i);
+          size_t a = episode_actions(i);
+          // If this is first occurrence of state, action
+          if(occurrences(s,a) == 0){
+            // Append to rewards
+            rewards(s,a) += episode_rewards(i);
+            // Increase counter
+            counter(s,a) += 1;
+            // Update Q-value
+            Q(s,a) = rewards(s,a)/counter(s,a);
+            // Mark this state, action pair as occurred
+            occurrences(s,a) = 1;
+          }
+        }
 
         // Print info
         if(iteration % 10000 == 0){

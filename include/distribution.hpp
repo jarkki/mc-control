@@ -89,14 +89,19 @@ namespace mc{
         this->densities = densities;
       }
 
-      uvec sample() const{
-        uvec state = zeros<uvec>(this->nvariables);
+
+      /*
+        Inverse Uniform CDF sampling.
+
+       */
+      vector<size_t> sample() const{
+        vector<size_t> state(this->nvariables);
         auto u = uniform(this->nvariables);
         for( auto variable : range(this->nvariables)){
           for(auto bin_i : range(this->nbins[variable])){
             if((this->cumul_distrs[variable](bin_i) <= u(variable)) &&
                (u(variable) < this->cumul_distrs[variable](bin_i+1))){
-              state(variable) = bin_i;
+              state[variable] = bin_i;
               break;
             }
           }
@@ -141,67 +146,6 @@ namespace mc{
       vector<vec> densities;
     };
 
-
-
-
-    void plot_distr(const vector<DiscreteDistribution> & distr, const vec & actions){
-
-      cout << "Plotting!" << endl;
-      // Only works for one-dim states for now
-      if (distr[0].nvariables > 1){
-        throw invalid_argument("Plotting only works on one-dimensional states for now...");
-      }
-      // Open file
-      ofstream file;
-      file.open ("plot.py");
-
-      // Imports
-      file << "import numpy as np" << endl;
-      file << "import matplotlib.pyplot as plt" << endl;
-      file << "from matplotlib import cm" << endl;
-      file << "from mpl_toolkits.mplot3d import Axes3D" << endl;
-
-      // Initiate plotting
-      file << "plt.style.use('ggplot')" << endl;
-      file << "fig = plt.figure()" << endl;
-      file << "ax = fig.add_subplot(111,projection='3d')" << endl;
-
-      // Colors
-      file << "colors = [hex['color'] for hex in list(plt.rcParams['axes.prop_cycle'])]" << endl;
-      file << "ncolors = len(colors)" << endl;
-      file << "coli = 0" << endl;
-
-      // For each action
-      int nactions = actions.size();
-      for (auto action : range(nactions)){
-          file << "bins = []" << endl;
-          file << "density = []" << endl;
-          file << "width = " << distr[action].bin_widths(0) << endl;
-
-          for(auto bin_i : range(distr[action].nbins[0]-1)){
-            file << "bins.append(" << distr[action].bins[0](bin_i) << ")" << endl;
-            file << "density.append(" << distr[action].densities[0](bin_i) << ")" << endl;
-          }
-
-          file << "ax.bar(bins, density, np.zeros(len(bins))+" << actions(action) << ", zdir='y',  alpha=0.8, color=colors[coli], width=width)" << endl;
-
-          // Cycle colors
-          file << "if coli >= (ncolors-1):" << endl;
-          file << "    coli = 0" << endl;
-          file << "else:" << endl;
-          file << "    coli += 1" << endl;
-        }
-      file << "ax.set_xlabel('State')" << endl;
-      file << "ax.set_ylabel('Action')" << endl;
-      file << "ax.set_zlabel('Density')" << endl;
-      file << "plt.show()" << endl;
-
-      file.close();
-
-      system ("ipython plot.py");
-
-
-    }
   }
 
 }

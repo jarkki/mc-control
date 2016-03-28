@@ -82,34 +82,10 @@ namespace mc{
         this->state_index_map = state_index_map;
       }
 
-      tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const{
-        size_t T = this->model.episode_length;
-        uvec states(T);
-        uvec actions(T);
-        vec rewards(T);
-        size_t next_state;
-        vector<size_t> std_state;
-
-        states(0) = state;
-        actions(0) = action;
-
-        for(auto t : range(T)){
-          // Sample state space and convert the state armadillo vec to std::vector
-          std_state = conv_to<vector<size_t> >::from(this->distributions[action].sample());
-          // Get the state index from the state-index map
-          next_state = this->state_index_map.at(std_state);
-          // Calculate reward for being in state, taking action and ending in next_state
-          rewards(t) = this->model.reward(this->state_values.row(state), this->actions(action), this->state_values.row(next_state));
-          // If not at the last time period
-          if (t < (T-1)){
-            state = next_state;
-            action = pol(state); // Choose new action from policy
-            states(t+1) = state; // Add to vectors
-            actions(t+1) = action;
-          }
-        }
-        return make_tuple(states,actions,rewards);
-      }
+      /*
+        Complete one episode of the problem.
+       */
+      virtual tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const = 0;
 
       ModelT model;
       vector<DiscreteDistribution> distributions;
