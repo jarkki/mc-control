@@ -12,9 +12,9 @@ parse_latex(rmd,
             git_username = "jarkki",
             git_reponame = "mc-control",
             git_branch = "develop",
-            git_image_dir = "figures",
-            text_height = 16)
+            git_image_dir = "figures")
+##            text_height = 12)
 
-## new_html = pandoc(new_md, format = "html")
-## browseURL(new_html)
+new_html = pandoc(new_md, format = "html")
+browseURL(new_html)
 

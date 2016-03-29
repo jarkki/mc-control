@@ -39,7 +39,7 @@ converter <- function(pdfname, # Name of output PDF.  Pngname will be same name 
 #' @return Name of output file as a PNG
 png_latex <- function(
   latex, # single character string of LaTeX code to convert
-  packages = c("amsmath", "amsfonts", "amssymb"),
+  packages = c("amsmath", "amsfonts", "amssymb", "graphicx"), ## MY CHANGE HERE!! (added graphicx)
   ...
 ){
   # latex = latexTranslate(latex)
@@ -48,7 +48,10 @@ png_latex <- function(
             packages,
             "\\begin{document}",
             "\\thispagestyle{empty}",
-            latex, "\\end{document}")
+            "\\scalebox{0.5}{",           ## MY CHANGE HERE!!
+            latex,
+            "}",
+            "\\end{document}")
   stub = tempfile(fileext = "")
   infile = paste0(stub, ".tex")
   writeLines(mystr, con = infile)
