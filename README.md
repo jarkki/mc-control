@@ -28,5 +28,5 @@ The action space is discretized to a finite number of actions.
 ### The Monte Carlo control with exploring starts
 The algorithm, reproduced from Sutton & Barto (1998) is 
 
-![Monte Carle control with exploring starts](https://github.com/jarkki/mc-control/blob/develop/fiqures/MC-ES.png?raw=true)
+![Monte Carle control with exploring starts](https://raw.githubusercontent.com/jarkki/mc-control/develop/figures/MC-ES.png)
 
