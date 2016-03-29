@@ -143,6 +143,7 @@ parse_latex <- function(
 
   ## outdir = dirname(rmd) 
   outdir = file.path(dirname(rmd), git_image_dir) ## MY CHANGE HERE!!
+  
   stopifnot(file.exists(rmd))
   ext = strsplit(rmd, "[.]")[[1]]
   ext = toupper(ext[length(ext)])
@@ -221,6 +222,8 @@ parse_latex <- function(
     filenames = sprintf("eq_no_%02.0f.png",
                         seq(eq_no+1, eq_no + length(outfiles)))
     eq_no = eq_no + length(outfiles)
+    inline_link_filenames <- filenames  ## MY CHANGE HERE!!
+    ##inline_links <- cat("![](", git_image_dir, "/", fname, "?raw=true)", sep="") ## MY CHANGE HERE!!
     filenames = file.path(outdir, filenames)
     mapply(function(x, y){
       file.copy(x, y, overwrite = TRUE)
@@ -246,8 +249,9 @@ parse_latex <- function(
     # Loop through and put in HTML
     ########################
     md = paste(md, collapse = "\n")
-    new_str = sprintf(insert_string, img_prefix,
-                      basename(filenames))
+    ## new_str = sprintf(insert_string, img_prefix, ## MY CHANGE HERE!!
+    ##                   basename(filenames))
+    new_str = sprintf("![](%s/%s?raw=true)", git_image_dir, inline_link_filenames) ## MY CHANGE HERE!!
     for (istr in seq(length(outfiles))){
       md = sub("\\$(.+?)\\$",
                new_str[istr],

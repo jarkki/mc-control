@@ -10,27 +10,9 @@ found at [here](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html).
 
 The optimization problem considered is the finite period stochastic dynamic optimization problem (and its infinite horizon version)
 
+![](figures/eq_no_01.png?raw=true), 
 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_01.png" alt="Equation Fail"height="20">
-, 
-
-where 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_02.png" alt="Equation Fail"height="20">
- is a policy function, 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_03.png" alt="Equation Fail"height="20">
- is a discount factor, 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_04.png" alt="Equation Fail"height="20">
- is a reward function, 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_05.png" alt="Equation Fail"height="20">
- is a stochastic state variable, 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_06.png" alt="Equation Fail"height="20">
- is an action taken by the agent when at state 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_07.png" alt="Equation Fail"height="20">
-, following the policy 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_08.png" alt="Equation Fail"height="20">
-. 
-<img src="https://rawgit.com/jarkki/mc-control/develop/figures/eq_no_09.png" alt="Equation Fail"height="20">
- denotes the time period.
+where ![](figures/eq_no_02.png?raw=true) is a policy function, ![](figures/eq_no_03.png?raw=true) is a discount factor, ![](figures/eq_no_04.png?raw=true) is a reward function, ![](figures/eq_no_05.png?raw=true) is a stochastic state variable, ![](figures/eq_no_06.png?raw=true) is an action taken by the agent when at state ![](figures/eq_no_07.png?raw=true), following the policy ![](figures/eq_no_08.png?raw=true). ![](figures/eq_no_09.png?raw=true) denotes the time period.
 
 # Installation
 
