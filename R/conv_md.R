@@ -11,7 +11,8 @@ parse_latex(rmd,
             new_md,
             git_username = "jarkki",
             git_reponame = "mc-control",
-            git_branch = "develop")
+            git_branch = "develop",
+            git_image_dir = "figures")
 
 ## new_html = pandoc(new_md, format = "html")
 ## browseURL(new_html)

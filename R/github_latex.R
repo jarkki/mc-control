@@ -114,6 +114,7 @@ parse_latex <- function(
   git_username = NULL, # GitHub username
   git_reponame = NULL, #
   git_branch = "master", #
+  git_image_dir= "figures", ## MY CHANGE HERE!! 
   text_height = 20, # Height of LaTeX rendered, passed ot \code{insert_string}
   insert_string =
     paste0('\n<img src="%s%s" ',
@@ -137,9 +138,11 @@ parse_latex <- function(
   img_prefix = file.path(raw_git_site,
                          git_username,
                          git_reponame,
-                         git_branch, "")
+                         git_branch,
+                         git_image_dir,"")
+
   ## outdir = dirname(rmd) 
-  outdir = file.path(dirname(rmd), "figures") ## MY CHANGE HERE!!
+  outdir = file.path(dirname(rmd), git_image_dir) ## MY CHANGE HERE!!
   stopifnot(file.exists(rmd))
   ext = strsplit(rmd, "[.]")[[1]]
   ext = toupper(ext[length(ext)])
