@@ -3,7 +3,6 @@
 #include "mc-control/utils.hpp"
 #include "mc-control/model.hpp"
 #include "mc-control/distribution.hpp"
-#include "mc-control/problem.hpp"
 #include "mc-control/algorithms.hpp"
 #include "mc-control/plot.hpp"
 
@@ -11,18 +10,19 @@ using namespace std;
 using namespace arma;
 using namespace mc::utils;
 using namespace mc::models;
-using namespace mc::distributions;
-using namespace mc::problem;
 using namespace mc::algorithms;
 using namespace mc::plot;
 
-/*
-  Transition function
 
-  y = k^alpha * z,
-
-  where k is the action (amount to save) and z is lognormal shock
-*/
+/*! Optimal Growth model
+ *
+ *
+ *  This model represents the classic
+ *
+ *  \param param
+ *
+ *  \return return type
+ */
 struct OptimalGrowthModel : Model{
 
   size_t nvariables;
@@ -31,7 +31,19 @@ struct OptimalGrowthModel : Model{
   double df;    // Discount factor
   mat state_lim;// Limits of state space
 
-  OptimalGrowthModel(){} // Default constructor
+  //! Default constructor
+  OptimalGrowthModel(){}
+
+  /*! Constructor
+   *
+   *
+   *  Detailed description
+   *
+   *  \param param
+   *
+   *  \return return type
+   */
+
   OptimalGrowthModel(mat state_lim, double theta = 0.5, double alpha = 0.8, double df = 0.9){
     this->nvariables = 1;
     this->theta = theta;
@@ -89,39 +101,85 @@ struct OptimalGrowthModel : Model{
 
 };
 
-class OptimalGrowthProblem : public DecisionProblem<OptimalGrowthModel>{
-public:
-  OptimalGrowthProblem(const OptimalGrowthModel &  model, const vec & actions,  uvec nbins, int nsamples) : DecisionProblem<OptimalGrowthModel>(model,actions,nbins,nsamples){};
+// Typedef for clearer (at least somewhat) code
+typedef DiscretizedModel<OptimalGrowthModel> DiscretizedOptimalGrowthModel;
+typedef SoftPolicy<DiscretizedModel<OptimalGrowthModel> > OptimalGrowthSoftPolicy;
 
-  /*
-    Complete one episode of the problem.
-    This is infinite horizon problem, so the length of the episode is 1.
-    For the MC-ES algorithm, the policy is not used.
-  */
-  tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const{
 
-    uvec states(1);
-    uvec actions(1);
-    vec returns(1);
-    size_t next_state;
-    vector<size_t> std_state_vec;
+/*! Simulate one episode from the optimal growth model WITH EXPLORING STARTS.
+ *
+ *
+ *  This function simulates one episode. note that this is only for the Monte Carlo control algorithm WITH EXPLORING STARTS.
+ *
+ *  \param discrete_model : The discretized model
+ *  \param state          : The state where to start from
+ *  \param action         : The randomly selected action to start with
+ *  \param pol            : The policy function policy(state)
+  *
+ *  \return Tuple with all states, actions and returns that happened during the episode.
+ */
+tuple<uvec,uvec,vec> episode_es(const DiscretizedOptimalGrowthModel & discrete_model,  const size_t & state,  const size_t & action, const  uvec & pol) {
 
-    states(0) = state;
-    actions(0) = action;
+  uvec states(1);
+  uvec actions(1);
+  vec returns(1);
+  size_t next_state;
+  vector<size_t> std_state_vec;
 
-    // Sample next state
-    std_state_vec = this->distributions[action].sample();
+  states(0) = state;
+  actions(0) = action;
 
-    // Get the state index from the state-index map
-    next_state = this->state_index_map.at(std_state_vec);
+  // Sample next state
+  std_state_vec = discrete_model.distributions[action].sample();
 
-    // Calculate reward for being in state, taking action and ending in next_state
-    returns(0) = this->model.reward(this->state_values.row(state), this->actions(action), this->state_values.row(next_state));
+  // Get the state index from the state-index map
+  next_state = discrete_model.state_index_map.at(std_state_vec);
 
-    return make_tuple(states,actions,returns);
-  }
+  // Calculate reward for being in state, taking action and ending in next_state
+  returns(0) = discrete_model.model.reward(discrete_model.state_values.row(state), discrete_model.actions(action), discrete_model.state_values.row(next_state));
 
-};
+  return make_tuple(states,actions,returns);
+}
+
+
+/*! Simulate one episode from the optimal growth model WITH SOFT EPSILON POLICIES.
+ *
+ *
+ *  This function simulates one episode. Note that this is only for the Monte Carlo control algorithm WITH SOFT EPSILON POLICIES.
+ *
+ *  \param discrete_model : The discretized model
+ *  \param start_state    : Starting state
+ *  \param soft_pol       : Soft policy.
+ *
+ *  \return Tuple with all states, actions and returns that happened during the episode.
+ */
+tuple<uvec,uvec,vec> episode_soft_pol(const DiscretizedOptimalGrowthModel & discrete_model, size_t start_state, const OptimalGrowthSoftPolicy & soft_pol) {
+
+  uvec states(1);
+  uvec actions(1);
+  vec returns(1);
+  size_t state, action, next_state;
+  vector<size_t> std_state_vec;
+
+  state = start_state;
+
+  // Sample action from the soft policy density for this state
+  action = soft_pol[state].sample();
+
+  // Sample next state
+  std_state_vec = discrete_model.distributions[action].sample();
+
+  // Get the state index from the state-index map
+  next_state = discrete_model.state_index_map.at(std_state_vec);
+
+  // Calculate reward for being in state, taking action and ending in next_state
+  returns(0) = discrete_model.model.reward(discrete_model.state_values.row(state), discrete_model.actions(action), discrete_model.state_values.row(next_state));
+
+  states(0) = state;
+  actions(0) = action;
+
+  return make_tuple(states,actions,returns);
+}
 
 
 int main(int argc, char *argv[])
@@ -142,19 +200,20 @@ int main(int argc, char *argv[])
   int nactions = 20;
   vec actions = linspace(state_lim(0,0), state_lim(0,1), nactions);
 
-  // Instantiate decision problem
-  OptimalGrowthProblem problem(model, actions, nbins, 10000);
+  // Create discretized model from the model
+  DiscretizedModel<OptimalGrowthModel> discrete_model(model, actions, nbins, 10000);
 
   // // Plot the distributions
-  // plot_distr(problem.distributions, problem.actions);
+  // plot_distr(discrete_model.distributions, discrete_model.actions);
 
   // Run the MC-ES algorithm
   mat Q;
   uvec pol;
-  tie(Q,pol) = run_mc_es(problem, 5000000);
+  tie(Q,pol) = run_mc_es(discrete_model, episode_es, 30000000);
+  // tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 30000000, 0.7);
 
   // Plot the Q-values
-  plot_q(Q,pol,problem);
+  plot_q(Q,pol,discrete_model);
 
   return 0;
 }

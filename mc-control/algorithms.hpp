@@ -2,104 +2,41 @@
 
 #include <stdexcept>
 #include <vector>
+#include <utility>
 #include <map>
 #include <tuple>
 #include <armadillo>
 #include "mc-control/utils.hpp"
 #include "mc-control/distribution.hpp"
-#include "mc-control/problem.hpp"
+#include "mc-control/model.hpp"
 
 using namespace std;
 using namespace arma;
 using namespace mc::utils;
 using namespace mc::distributions;
-using namespace mc::problem;
+using namespace mc::models;
 
 namespace mc{
 
   namespace algorithms{
 
-    /*
+
+    /*! Monte Carlo control with exploring starts.
      *
-     * Use inverse uniform cdf sampling to sample from discrete distribution
      *
+     *  Detailed description
+     *
+     *  \param param
+     *
+     *  \return return type
      */
-    size_t sample_discrete(const vec & densities){
-      size_t n = densities.size();
-      vec cum_prob = zeros(n+1);
-      cum_prob(span(1, n))= cumsum(densities);
-      double u = uniform();
-      for(auto i : range(n)){
-        if(u <= cum_prob(i+1)){
-          return i;
-        }
-      }
-      throw invalid_argument("Function sample_discrete failed...");
-    }
+    template<typename DiscretizedModelT, typename EpisodeFuncT>
+    tuple<mat,uvec> run_mc_es(const DiscretizedModelT & discrete_model,
+                              EpisodeFuncT episode,
+                              size_t niterations = 100000){
 
-    /*
-     *
-     * Returns the possible actions for a given state.
-     *
-     */
-    template<typename ModelT>
-    uvec possible_actions(const vec & state, const vec & actions, const ModelT & model){
-
-      size_t nactions = actions.size();
-      vector<size_t> possible;
-      for(auto action : range(nactions)){
-        if(model.constraint(actions(action), state)){
-          possible.push_back(action);
-        }
-      }
-      uvec poss = conv_to<uvec>::from(possible);
-      return poss;
-    };
-
-    /*
-     *
-     * Returns the action that maximizes the Q-value for the given state
-     *
-     */
-    size_t argmax_q(const mat & Q, const size_t &state, const uvec & possible_a){
-
-      // There might be several actions that give the max Q-value
-      vector<size_t> maxq_actions;
-
-      // Calculate the max Q-value for this state and actions possible from here
-      double maxq = Q(state, possible_a(0));
-      for(auto i : range(1,possible_a.size())){
-        if(Q(state,possible_a(i)) > maxq){
-          maxq = Q(state,possible_a(i));
-        }
-      }
-      // Check if there are several actions with same q-value as maxq
-      for(auto i : range(possible_a.size())){
-        if (Q(state,possible_a(i)) == maxq){
-          maxq_actions.push_back(possible_a(i));
-        }
-      }
-
-      // Return the single action that maximizes the Q-value or
-      //  randomly one of the actions that maximize the Q-value.
-      if(maxq_actions.size() > 1){
-        return maxq_actions[randint(maxq_actions.size())];
-      }else{
-        return maxq_actions[0];
-      }
-    }
-
-    /*
-
-      Monte Carlo control with exploring starts.
-
-    */
-    template<typename ProblemT>
-    tuple<mat,uvec> run_mc_es(const ProblemT & problem,
-                             size_t niterations = 100000){
-
-      size_t nstates = problem.state_space_size;
-      size_t nactions = problem.nactions;
+      size_t nstates = discrete_model.state_space_size;
+      size_t nactions = discrete_model.nactions;
 
       // Init the matrices for Q-value, counter and returns
       mat Q = zeros(nstates,nactions);
@@ -110,7 +47,7 @@ namespace mc{
       // Init random policy
       uvec pol(nstates);
       for(auto i : range(nstates)){
-        uvec poss = possible_actions(problem.state_values.row(i), problem.actions, problem.model);
+        uvec poss = possible_actions(discrete_model.state_values.row(i), discrete_model.actions, discrete_model.model);
         pol(i) = poss(randint(poss.size()));
       }
 
@@ -125,15 +62,14 @@ namespace mc{
 
         // Draw random starting state
         state = randint(nstates);
-        state_value = problem.state_values.row(state);
+        state_value = discrete_model.state_values.row(state);
 
         // Select random action
-        poss_actions = possible_actions(state_value, problem.actions, problem.model);
+        poss_actions = possible_actions(state_value, discrete_model.actions, discrete_model.model);
         action = poss_actions(randint(poss_actions.size()));
 
         // Run episode, starting from state, action and then following policy pol
-        episode_result = problem.episode(state, action, pol);
-        tie(episode_states, episode_actions, episode_returns) = episode_result;
+        tie(episode_states, episode_actions, episode_returns) = episode(discrete_model, state, action, pol);
 
         // For each state, action pair in episode
         for(auto i : range(episode_states.size())){
@@ -154,7 +90,7 @@ namespace mc{
 
         // Update policy
         for(auto state : episode_states){
-          uvec poss_a = possible_actions(problem.state_values.row(state), problem.actions, problem.model);
+          uvec poss_a = possible_actions(discrete_model.state_values.row(state), discrete_model.actions, discrete_model.model);
           pol(state) = argmax_q(Q,state,poss_a);
         }
         // Print info
@@ -167,35 +103,38 @@ namespace mc{
     }
 
 
-    /*
+    /*! Monte Carlo control with epsilon-soft policies.
+     *
+     *
+     *  Detailed description
+     *
+     *  \param param
+     *
+     *  \return return type
+     */
+    template<typename DiscretizedModelT, typename EpisodeFuncT>
+    tuple<mat,uvec> run_mc_eps_soft(const DiscretizedModelT & discrete_model,
+                                    EpisodeFuncT episode,
+                                    size_t niterations = 100000,
+                                    double epsilon = 0.1){
 
-      Monte Carlo control with epsilon-soft policies. No exploring starts.
-
-    */
-    template<typename ProblemT>
-    tuple<mat,uvec> run_mc_eps_soft(const ProblemT & problem,
-                                 size_t niterations = 100000){
-
-      size_t nstates = problem.state_space_size;
-      size_t nactions = problem.nactions;
+      size_t nstates = discrete_model.state_space_size;
+      size_t nactions = discrete_model.nactions;
 
       // Init the matrices for Q-value, counter and returns
       mat Q = zeros(nstates,nactions);
       mat counter = zeros(nstates,nactions);
       mat returns = zeros(nstates,nactions);
+
+      // Init soft policy vectors for each state, initialize to equal probabilities
+      SoftPolicy<DiscretizedModelT> soft_pol(discrete_model);
+
       Mat<int> occurrences;
-
-      // Init random policy
-      uvec pol(nstates);
-      for(auto i : range(nstates)){
-        uvec poss = possible_actions(problem.state_values.row(i), problem.actions, problem.model);
-        pol(i) = poss(randint(poss.size()));
-      }
-
       uvec poss_actions, episode_states, episode_actions;
-      size_t state, action;
+      size_t state;
       vec state_value, qvals, episode_returns;
       tuple<uvec,uvec,vec> episode_result;
+      uvec pol(nstates);
 
       for (auto iteration : range(niterations)){
         // Occurrences of state, action pairs in the episode (init to zero)
@@ -203,15 +142,10 @@ namespace mc{
 
         // Draw random starting state
         state = randint(nstates);
-        state_value = problem.state_values.row(state);
+        state_value = discrete_model.state_values.row(state);
 
-        // Select random action
-        poss_actions = possible_actions(state_value, problem.actions, problem.model);
-        action = poss_actions(randint(poss_actions.size()));
-
-        // Run episode, starting from state, action and then following policy pol
-        episode_result = problem.episode(state, action, pol);
-        tie(episode_states, episode_actions, episode_returns) = episode_result;
+        // Generate episode using the epsilon-soft policy
+        tie(episode_states, episode_actions, episode_returns) = episode(discrete_model, state, soft_pol);
 
         // For each state, action pair in episode
         for(auto i : range(episode_states.size())){
@@ -230,10 +164,20 @@ namespace mc{
           }
         }
 
-        // Update policy
+        // Update policy for each state in episode
         for(auto state : episode_states){
-          uvec poss_a = possible_actions(problem.state_values.row(state), problem.actions, problem.model);
-          pol(state) = argmax_q(Q,state,poss_a);
+          // Greedy action
+          size_t greedy_action = argmax_q(Q, state, soft_pol[state].actions);
+          // For each action possible from this state
+          size_t nactions_s = soft_pol[state].actions.size();
+          for(auto i : range(nactions_s)){
+            // Greedy action gets the highest probability and other actions share low probability
+            if (soft_pol[state].actions(i) == greedy_action){
+              soft_pol[state].density(i) = 1.0 - epsilon + (epsilon/static_cast<double>(nactions_s));
+            }else{
+              soft_pol[state].density(i) = epsilon/static_cast<double>(nactions_s);
+            }
+          }
         }
         // Print info
         if(iteration % 10000 == 0){
@@ -241,8 +185,14 @@ namespace mc{
         }
 
       }
+
+      // Calculate greedy policy
+      for(auto state : range(nstates)){
+        pol(state) = argmax_q(Q, state, soft_pol[state].actions);
+      }
+
       return make_tuple(Q, pol);
     }
-    
+
   }
 }

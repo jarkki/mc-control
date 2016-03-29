@@ -6,7 +6,7 @@ DEBUGFLAGS := -Wall -g -std=c++11
 PROJECT_INCLUDE_DIR := ./
 ARMADILLO_INCLUDE_DIR := /usr/local/Cellar/armadillo/6.400.3_1/include
 BOOST_INLUDE_DIR := /usr/local/Cellar/boost/1.60.0_1/include
-INCLUDE_DIRS := -I$(PROJECT_INCLUDE_DIR) -I$(ARMADILLO_INCLUDE_DIR) -I$(BOOST_INLUDE_DIR) 
+INCLUDE_DIRS := -I$(PROJECT_INCLUDE_DIR) -I$(ARMADILLO_INCLUDE_DIR) -I$(BOOST_INLUDE_DIR)
 
 # Libraries to link and library directories
 LDLIBS := -larmadillo
@@ -14,7 +14,7 @@ ARMADILLO_LIB_DIR := /usr/local/Cellar/armadillo/6.400.3_1/lib
 LDFLAGS := -L$(ARMADILLO_LIB_DIR)
 
 # This is header only library
-DEPS := mc-control/utils.hpp mc-control/distribution.hpp mc-control/algorithms.hpp mc-control/model.hpp mc-control/problem.hpp mc-control/plot.hpp
+DEPS := mc-control/utils.hpp mc-control/distribution.hpp mc-control/algorithms.hpp mc-control/model.hpp mc-control/plot.hpp
 
 all: optgrowth
 
@@ -27,4 +27,3 @@ optgrowth_debug: $(DEPS)
 clean_og:
 	rm optgrowth
 	rm -rf optgrowth.dSYM
-
