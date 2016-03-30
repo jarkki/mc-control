@@ -103,8 +103,6 @@ struct OptimalGrowthModel : Model{
 
 // Typedef for clearer (at least somewhat) code
 typedef DiscretizedModel<OptimalGrowthModel> DiscretizedOptimalGrowthModel;
-typedef SoftPolicy<DiscretizedModel<OptimalGrowthModel> > OptimalGrowthSoftPolicy;
-
 
 /*! Simulate one episode from the optimal growth model WITH EXPLORING STARTS.
  *
@@ -148,39 +146,42 @@ tuple<uvec,uvec,vec> episode_es(const DiscretizedOptimalGrowthModel & discrete_m
  *  This function simulates one episode. Note that this is only for the Monte Carlo control algorithm WITH SOFT EPSILON POLICIES.
  *
  *  @param discrete_model : The discretized model
- *  @param start_state    : Starting state
  *  @param soft_pol       : Soft policy.
  *
  *  @retval Tuple with all states, actions and returns that happened during the episode.
  */
-tuple<uvec,uvec,vec> episode_soft_pol(const DiscretizedOptimalGrowthModel & discrete_model, size_t start_state, const OptimalGrowthSoftPolicy & soft_pol) {
+tuple<uvec,uvec,vec> episode_soft_pol(const DiscretizedOptimalGrowthModel & discrete_model,  const uvec & pol) {
 
   uvec states(1);
   uvec actions(1);
   vec returns(1);
+  vec state_value, next_state_value;
   size_t state, action, next_state;
   vector<size_t> std_state_vec;
+  uvec poss_actions;
 
-  state = start_state;
+  // Draw random state
+  state = randint(discrete_model.state_space_size);
+  state_value = discrete_model.state_values.row(state);
 
-  // Sample action from the soft policy density for this state
-  action = soft_pol[state].sample();
+  // Select action with given policy
+  action = pol(state);
 
   // Sample next state
   std_state_vec = discrete_model.distributions[action].sample();
 
   // Get the state index from the state-index map
   next_state = discrete_model.state_index_map.at(std_state_vec);
+  next_state_value = discrete_model.state_values.row(next_state);
 
   // Calculate reward for being in state, taking action and ending in next_state
-  returns(0) = discrete_model.model.reward(discrete_model.state_values.row(state), discrete_model.actions(action), discrete_model.state_values.row(next_state));
+  returns(0) = discrete_model.model.reward(state_value, discrete_model.actions(action), next_state_value);
 
   states(0) = state;
   actions(0) = action;
 
   return make_tuple(states,actions,returns);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -197,24 +198,24 @@ int main(int argc, char *argv[])
   uvec nbins = {30};
 
   // Initialize the actions
-  int nactions = 10;
-  //vec actions = linspace(state_lim(0,0), state_lim(0,1), nactions);
-  vec actions = linspace(0.5, state_lim(0,1), nactions);
+  int nactions = 30;
+  vec actions = linspace(state_lim(0,0), state_lim(0,1), nactions);
+  //vec actions = linspace(0.5, state_lim(0,1), nactions);
 
   // Create discretized model from the model
   DiscretizedModel<OptimalGrowthModel> discrete_model(model, actions, nbins, 100000);
 
-  // Plot the distributions
-  plot_distr(discrete_model.distributions, discrete_model.actions);
+  // // Plot the distributions
+  // plot_distr(discrete_model.distributions, discrete_model.actions);
 
-  // // Run the MC-ES algorithm
-  // mat Q;
-  // uvec pol;
-  // tie(Q,pol) = run_mc_es(discrete_model, episode_es, 30000000);
-  // // tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 30000000, 0.7);
+  // Run the MC-ES algorithm
+  mat Q;
+  uvec pol;
+  // tie(Q,pol) = run_mc_es(discrete_model, episode_es, 5000000);
+  tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 60000000, 0.1);
 
-  // // Plot the Q-values
-  // plot_q(Q,pol,discrete_model);
+  // Plot the Q-values
+  plot_q(Q,pol,discrete_model);
 
 
   return 0;

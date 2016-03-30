@@ -13,7 +13,7 @@ LDLIBS := -larmadillo
 ARMADILLO_LIB_DIR := /usr/local/Cellar/armadillo/6.400.3_1/lib
 LDFLAGS := -L$(ARMADILLO_LIB_DIR)
 
-# This is header only library
+# This is a header only library
 DEPS := mc-control/utils.hpp mc-control/distribution.hpp mc-control/algorithms.hpp mc-control/model.hpp mc-control/plot.hpp
 
 all: optgrowth
@@ -21,9 +21,9 @@ all: optgrowth
 optgrowth: $(DEPS)
 	$(CXX) $(CXXFLAGS) $(INCLUDE_DIRS) $(LDFLAGS) -o optgrowth examples/optgrowth.cpp $(LDLIBS)
 
-optgrowth_debug: $(DEPS)
+debug: $(DEPS)
 	$(CXX) $(DEBUGFLAGS) $(INCLUDE_DIRS) $(LDFLAGS) -o optgrowth examples/optgrowth.cpp $(LDLIBS)
 
-clean_og:
+clean:
 	rm optgrowth
 	rm -rf optgrowth.dSYM

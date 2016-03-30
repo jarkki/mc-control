@@ -42,6 +42,7 @@ namespace mc{
       // file << "ncolors = len(colors)" << endl;
       // file << "coli = 0" << endl;
 
+
       // Write state and action values to arrays
       file << "state_values = []" << endl;
       for(auto bin_x : problem.bins[0]){
@@ -62,7 +63,7 @@ namespace mc{
       }
 
       file << "X,Y = np.meshgrid(state_values, action_values)" << endl;
-      file << "plt.pcolormesh(X,Y,Q.T)" << endl;
+      file << "plt.contourf(X,Y,Q.T, cmap=plt.get_cmap('summer'))" << endl;
 
       // Plot the optimal policy pol
       vec pol_x = problem.state_values;
@@ -77,13 +78,16 @@ namespace mc{
         file << "pol_y.append(" << pol_y(i) << ")" << endl;
       }
 
-      file << "plt.plot(pol_x,pol_x)" << endl;
-      file << "plt.plot(pol_x,pol_y)" << endl;
+      //file << "plt.plot(pol_x,pol_x)" << endl;
+      file << "plt.plot(pol_x,pol_y, color='#A0522D')" << endl;
 
       // Title and labels
       file << "plt.xlabel('State')" << endl;
       file << "plt.ylabel('Action')" << endl;
-      file << "plt.title('Q-values')" << endl;
+      file << "plt.title('Q-value')" << endl;
+
+      // Some text
+      file << "plt.text(0.8*pol_x[len(pol_x)-1], 1.1 * pol_y[len(pol_y)-1], 'Optimal policy', color='#A0522D', fontsize=12)" << endl;
 
       file << "plt.show()" << endl;
 

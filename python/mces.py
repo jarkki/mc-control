@@ -8,8 +8,10 @@ from matplotlib.colors import LightSource
 from mpl_toolkits.mplot3d import Axes3D
 from cycler import cycler
 from itertools import cycle
-from scipy.interpolate import griddata, RectBivariateSpline, SmoothBivariateSpline, LinearNDInterpolator
+from scipy.interpolate import griddata, RectBivariateSpline, SmoothBivariateSpline, LinearNDInterpolator, CloughTocher2DInterpolator, Rbf
 from scipy.optimize import fminbound
+
+from rbf import *
 
 # Model parameters
 theta = 0.5
@@ -206,25 +208,97 @@ def mc_es(densities, state_bins, state_values, actions, niterations=10000, epsil
         # Update the Q-value for this state-action pair
         Q[state,action] = rewards[state,action]/counter[state,action]
         # Print info
-        if iteration % 1000 == 0:
+        if iteration % 100000 == 0:
             print ("Iter. {}".format(iteration))
     return Q
 
 # Run it
-Q = mc_es(densities, state_bins, state_values, actions, niterations=5000000, epsilon=0.1)
+#Q = mc_es(densities, state_bins, state_values, actions, niterations=5000000, epsilon=0.1)
 
-# Plot
+# Create meshgrid
 X,Y = np.meshgrid(state_values, actions)
-plt.pcolormesh(X,Y,Q.T)
+xy = []
+z = []
+for i in range(np.shape(X)[0]):
+    for j in range(np.shape(X)[1]):
+        xy.append([X[i,j],Y[i,j]])
+        z.append(Q.T[i,j])
+
+# Smooth with rbf
+# Centroids
+ncentroids = 10
+cent = np.linspace(xlim[0], xlim[1], ncentroids)
+centroids = np.array([[ci, cj] for ci in cent for cj in cent])
+
+# Fit
+# g = GaussRBF(centroids,0.1)
+# g.fit(xy,z)
+# g = CloughTocher2DInterpolator(xy,z)
+g = Rbf(X,Y,z, smooth=0.9)
+
+nx = 100
+x = np.linspace(xlim[0], xlim[1], nx)
+y = x
+xx,yy = np.meshgrid(x,y)
+zz = np.zeros(np.shape(xx))
+for i in range(np.shape(xx)[0]):
+    for j in range(np.shape(xx)[1]):
+        #zz[i,j] = g(np.array([xx[i,j], yy[i,j]]).reshape((1,2)))
+        zz[i,j] = g(xx[i,j], yy[i,j])
+
+# Scatter
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.scatter(xx,yy,zz)
+plt.show()
+
+# Surface
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ls = LightSource(270, 45)
+rgb = ls.shade(zz, cmap=cm.coolwarm, vert_exag=0.1, blend_mode='soft')
+ax.plot_surface(xx,yy,zz, rstride=1, cstride=1, facecolors=rgb, alpha=0.5)
+plt.show()
+
+# Colormesh
+plt.pcolormesh(xx, yy, zz, cmap=plt.get_cmap("summer"))
+plt.show()
+# Contour
+plt.contourf(xx,yy,zz, cmap=plt.get_cmap("summer"))
+plt.show()
+
+# Plot smoothed policy
+pol = []
+for state in x:
+    # max_action = fminbound(lambda a:-g(np.array([state,a]).reshape((1,2))),0.0,state)
+    max_action = fminbound(lambda a:-g(state,a),0.0,state)
+    # pol.append(g(np.array([state,max_action])))
+    # pol.append(g(state,max_action))
+    pol.append(max_action)
+
+plt.plot(x,pol, linewidth=2.0, color='#A0522D')
+plt.ylim(state_values[0], state_values[len(state_values)-1])
+plt.text(5, 6, "Optimal policy")
+plt.show()
+
+# Contour + policy
+#plt.pcolormesh(X,Y,Q.T, cmap=plt.get_cmap("summer"))
+plt.contourf(X,Y,Q.T, cmap=plt.get_cmap("summer"))
 states = range(nbins)
 pol = []
 for state in states:
     pol.append(actions[np.argmax(Q[state,:])])
 adx = actions[1]-actions[0]
 sdx = state_values[1] - state_values[0]
-plt.plot([state_values[state] for state in states] + sdx/2, pol + adx/2, linewidth=3.0, color='white')
-x = np.linspace(xlim[0],xlim[1],100)
-plt.plot(x,x)
+plt.plot([state_values[state] for state in states] + sdx/2, pol + adx/2, linewidth=2.0, color='#A0522D')
+# x = np.linspace(xlim[0],xlim[1],100)
+# plt.plot(x,x, color='black', lw=3.0)
+plt.xlim(state_values[0], state_values[len(state_values)-1])
+plt.xlabel('State')
+plt.ylabel('Action')
+plt.title('Q-value')
+plt.text(0.8*xlim[1], pol[len(pol)-1], "Optimal policy", color='#A0522D', fontsize=12)
 plt.show()
+
 
 

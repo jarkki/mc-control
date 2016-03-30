@@ -1,5 +1,8 @@
 **mc-control** is a C++ library for solving stochastic dynamic optimization problems with *Monte Carlo optimal control*. It solves continuous state & continuous action problems by discretizing the continuous variables.
 
+![Discretized probability distribution](figures/discrete_density.png)
+![Optimal policy for optimal consumption problem](figures/optimal_policy.png)
+
 # Introduction
 The library implements the two on-policy algorithms (exploring starts, sigma-soft policy) described in the 5th chapter of 
 
@@ -22,6 +25,7 @@ This library depends on two other libraries:
 
 * [Armadillo](http://arma.sourceforge.net) (for matrices, vectors and random number generation)
 * [Boost](http://www.boost.org/)     (for boost::irange range-based iterator)
+* Python + numpy + [matplotlib](http://matplotlib.org/) for plotting
 
 If the compiler cannot find either of the libraries, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
 
@@ -60,7 +64,7 @@ To discretize the state variable ![](figures/eq_no_18.png?raw=true), we go throu
 
 Let's discretize the state ![](figures/eq_no_19.png?raw=true) into 30 bins in the interval ![](figures/eq_no_20.png?raw=true) and action variable ![](figures/eq_no_21.png?raw=true) into 10 values. With 100k samples from ![](figures/eq_no_22.png?raw=true) the discrete approximation to the state-action density looks like this:
 
-![](figures/discrete_density.png)
+![Discretized probability distribution](figures/discrete_density.png)
 
 ## Use Monte Carlo control with exploring starts
 The algorithm, reproduced from Sutton & Barto (1998) chapter 5. 

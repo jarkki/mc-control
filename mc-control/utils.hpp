@@ -36,7 +36,7 @@ namespace mc{
       return randu(n);
     }
 
-    //! Single draw from U(0,1) 
+    //! Single draw from U(0,1)
     double uniform(){
       vec u = randu(1);
       return u(0);
@@ -57,10 +57,10 @@ namespace mc{
       return randn(n);
     }
 
-    //! Single draw from N(0,1) 
+    //! Single draw from N(0,1)
     double norm(){
 
-      vec n = randn(1); 
+      vec n = randn(1);
       return n(0);
     }
 
@@ -157,7 +157,7 @@ namespace mc{
     /*! Inverse uniform cdf sampling to sample from discrete distribution
      *
      *
-     *  https://en.wikipedia.org/wiki/Inverse_transform_sampling 
+     *  https://en.wikipedia.org/wiki/Inverse_transform_sampling
      *
      *  @param densities Vector of discrete probabilities that sum to one (density)
      *
@@ -178,6 +178,18 @@ namespace mc{
     }
 
 
+    /*! Returns a random policy, given the possible actions for each state.
+     *
+     */
+    uvec create_random_policy(const vector<uvec> & possible_actions){
+      size_t nstates = possible_actions.size();
+      uvec pol(nstates);
+      for(auto state : range(nstates)){
+        pol(state) = possible_actions[state](randint(possible_actions[state].size()));
+      }
+      return pol;
+    }
+
     /*! Returns the possible actions for a given state.
      *
      */
@@ -194,6 +206,25 @@ namespace mc{
       uvec poss = conv_to<uvec>::from(possible);
       return poss;
     };
+
+    template<typename DiscretizedModelT>
+    vector<uvec> create_possible_actions_matrix(const DiscretizedModelT & discrete_model){
+
+      vector<uvec> possible;
+      for(auto state : range(discrete_model.state_space_size)){
+        vec state_value = discrete_model.state_values.row(state);
+        vector<size_t> possible_for_state;
+        for(auto action : range(discrete_model.actions.size())){
+          if(discrete_model.model.constraint(discrete_model.actions(action), state_value)){
+            possible_for_state.push_back(action);
+          }
+        }
+        uvec state_actions = conv_to<uvec>::from(possible_for_state);
+        possible.push_back(state_actions);
+      }
+      return possible;
+
+    }
 
     /*! Returns the action that maximizes the Q-value for the given state
      *
@@ -226,63 +257,5 @@ namespace mc{
       }
     }
 
-    /*! Struct to hold possible actions and according probabilities for an action
-     *
-     */
-    struct SoftStatePolicy{
-      vec density; // Probability density for each possible action from this state
-      uvec actions; // Possible actions from this state
-
-      SoftStatePolicy(){};
-      SoftStatePolicy(vec density, uvec actions) : density(density), actions(actions){};
-
-      /*! Draw an action according to the density (for this state)*/
-      size_t sample(){
-        return(actions(sample_discrete(this->density)));
-      }
-    };
-
-    /*! Soft policy
-     *
-     *
-     *  Holds the possible actions and probability densities for actions. Initializes each action with equal probability.
-     *
-     *  @param discrete_model the associated model for calculating possible actions
-     *
-     */
-    template <typename DiscretizedModelT>
-    struct SoftPolicy{
-
-      /*! Construtor Initializes each action with equal probability.*/
-      SoftPolicy(const DiscretizedModelT & discrete_model){
-        size_t nstates = discrete_model.state_space_size;
-
-        vector<SoftStatePolicy> soft_pol(nstates);
-
-        for(auto state : range(nstates)){
-          // Values for this state
-          vec state_val = discrete_model.state_values.row(state);
-          // Possible actions from this state
-          uvec poss_a = possible_actions(state_val, discrete_model.actions, discrete_model.model);
-          // Density with equal probabilities
-          vec density = zeros(poss_a.size()) + 1.0/static_cast<double>(poss_a.size());
-          // Instantiate policy
-          SoftStatePolicy pol(density, poss_a);
-          // Add to vector
-          soft_pol[state] = pol;
-        }
-        this->policies = soft_pol;
-      }
-
-      SoftStatePolicy& operator[](const size_t & state){
-        return this->policies[state];
-      }
-
-      SoftStatePolicy operator[](const size_t & state) const{
-        return this->policies[state];
-      }
-
-      vector<SoftStatePolicy> policies;
-    };
   }
 }
