@@ -16,20 +16,46 @@ namespace mc{
 
   namespace models{
 
+    /*! Abstract base class for the models
+     *
+     */
     struct Model{
 
+      /*! next_state = f(state, action)*/
       virtual vec transition(const vec & state, const double & action) const = 0;
+
+      /*! Samples the transition funciton n times*/
       virtual mat sample_transitions(const double & action, size_t n) const = 0;
+
+      /*! Reward from being in a state, taking action and ending in next_state */
       virtual double reward (const vec & state_value, const double & action_value, const vec & next_state_value) const = 0;
+
+      /*! Returns true if it is possible to take the action from this state */
       virtual bool constraint(const double & action, const vec & state) const{
         return true;
       };
 
     };
 
+    /*! Creates a discretized version of a given continuous state model
+     *
+     *
+     *  Discretizes the state space and constructs an inverse cumulative distribution
+     *   function for inverse transform sampling.
+     *
+     */
     template <typename ModelT>
     class DiscretizedModel{
     public:
+
+      /*! Constructor
+       *
+       *  \param model    : continuous state model derived from the abstract model base class
+       *  \param actions  : vector of discrete points in continuous action space
+       *  \param nbins    : vector, # of bins for each variable
+       *  \param nsamples : # of the samples to draw from the model for the discretization
+       *
+       */
       DiscretizedModel(const ModelT &  model, const vec & actions,  uvec nbins, int nsamples){
         size_t nactions = actions.size();
 
@@ -93,12 +119,6 @@ namespace mc{
         this->state_space_size = state_space_size;
         this->state_index_map = state_index_map;
       }
-
-      /*
-        Complete one episode of the problem.
-        Return all states, actions and returns occurring during the episode.
-       */
-      // virtual tuple<uvec,uvec,vec> episode( size_t  state,  size_t action, const  uvec & pol) const;
 
       ModelT model;
       vector<DiscreteDistribution> distributions;

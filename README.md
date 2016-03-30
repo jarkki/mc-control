@@ -1,49 +1,51 @@
-# mc-control
-A C++ library for solving continuous state, continuous action stochastic dynamic optimization problems with **Monte Carlo optimal control**.
-
-The library implements the two on-policy algorithms described in the 5th chapter of 
-
->Sutton, Richard S., and Andrew G. Barto. *Reinforcement learning: An introduction*. MIT press, 1998.
-
-found at [here](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html).
+**mc-control** is a C++ library for solving stochastic dynamic optimization problems with *Monte Carlo optimal control*. It solves continuous state & continuous action problems by discretizing the continuous variables.
 
 # Introduction
-The optimization problem considered here is the stochastic dynamic optimization problem of maximizing the expected discounted rewards over either a finite or an infinite time horizon. The finite horizon problem is 
+The library implements the two on-policy algorithms (exploring starts, sigma-soft policy) described in the 5th chapter of 
+
+>Sutton, Richard S., and Andrew G. Barto. [*Reinforcement learning: An introduction*](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html). MIT press, 1998.
+
+While *approximate dynamic programming* methods like *fitted value iteration* can be the logical choice for continuous state & continuous action problems, they can be unstable and hard to implement due to the several layers of approximations. The Monte Carlo control algorithms can be very useful for checking the results obtained from dynamic programming methods. Depending on the nature of the problem, the Monte Carlo methods can be a better fit compared to other reinforcement learning methods like *Q-learning* and *fitted Q-iteration*. MC methods are also less prone to violations of the Markov property and do not need a model for the dynamics, only simulations or samples from interacting with the system.
+
+The optimization problem considered is the stochastic dynamic optimization problem of maximizing the expected discounted rewards over either a finite or an infinite time horizon. The finite horizon problem is 
 
 ![](figures/eq_no_01.png?raw=true), 
 
 where ![](figures/eq_no_02.png?raw=true) is a policy function, ![](figures/eq_no_03.png?raw=true) is a discount factor, ![](figures/eq_no_04.png?raw=true) is a reward function, ![](figures/eq_no_05.png?raw=true) is a stochastic state variable, ![](figures/eq_no_06.png?raw=true) is an action taken by the agent when at state ![](figures/eq_no_07.png?raw=true), following the policy ![](figures/eq_no_08.png?raw=true). ![](figures/eq_no_09.png?raw=true) denotes the time period. The state variable ![](figures/eq_no_10.png?raw=true) is assumed to be Markovian, which is why problems of this type are often called *Markov Decision Processes*.
 
+## Curse of dimensionality
+
 # Installation
+## Dependencies
+This library depends on two other libraries:
+
+* Armadillo (for matrices, vectors and random number generation)
+* Boost     (for boost::irange range-based iterator)
+
+If the compiler cannot find either of the libraries, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
+
+## Compilation
+`mc-control` is header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example consumption model. Edit the [makefile](Makefile) if armadillo or boost is not found.
+
 
 # Example
-A classic example in economics is the neoclassical consumption model where an agent splits her income into consumption and savings and seeks the savings policy that maximizes her expected discounted utility from consumption over time.
+A classic example for a stochastic dynamic optimization problem in economics is the neoclassical consumption model where an agent splits her income into consumption and savings and seeks the savings policy that maximizes her expected discounted utility from consumption over an infinite time horizon:
 
-Income ![](figures/eq_no_11.png?raw=true) is split into savings ![](figures/eq_no_12.png?raw=true) and consumption ![](figures/eq_no_13.png?raw=true). Income process ![](figures/eq_no_14.png?raw=true) can be for example
+![](figures/eq_no_11.png?raw=true)
 
-![](figures/eq_no_15.png?raw=true)
-
-where ![](figures/eq_no_16.png?raw=true) is an iid. random shock.
-	
-Agent wants to maximize utility from consumption. Agent searches for optimal saving function ![](figures/eq_no_17.png?raw=true) given the income, that maximizes the infinite horizon expected utility from consumption:
-
-![](figures/eq_no_18.png?raw=true)
-
-![](figures/eq_no_19.png?raw=true)
+![](figures/eq_no_12.png?raw=true)
 
 s.t.
 
-![](figures/eq_no_20.png?raw=true), (feasibility constraint),
-
-where ![](figures/eq_no_21.png?raw=true) and ![](figures/eq_no_22.png?raw=true) is the discount factor.
+![](figures/eq_no_13.png?raw=true), (feasibility constraint),
 
 The transition function for income is
 
-![](figures/eq_no_23.png?raw=true)
+![](figures/eq_no_14.png?raw=true)
 
-with ![](figures/eq_no_24.png?raw=true), where ![](figures/eq_no_25.png?raw=true) is the savings rate. 
+with the action ![](figures/eq_no_15.png?raw=true) representing the amount to save, given the income.
 
-Popular choice for the shock is log-normal distribution ![](figures/eq_no_26.png?raw=true)
+Popular choice for the shock is log-normal distribution ![](figures/eq_no_16.png?raw=true) For utility function, ![](figures/eq_no_17.png?raw=true).
 
 
 ## Transforming the consumption model into reinforcement learning domain
@@ -55,13 +57,13 @@ The Monte Carlo optimal control belongs to the group of reinforcement learning a
 4. Reward function
 5. Simulating an episode from the model
 
-The consumption model has a single continuous state variable: income ![](figures/eq_no_27.png?raw=true), now denoted as ![](figures/eq_no_28.png?raw=true)
+The consumption model has a single continuous state variable: income ![](figures/eq_no_18.png?raw=true), now denoted as ![](figures/eq_no_19.png?raw=true)
 
-The continuous action variable is the amount to save, given the income: ![](figures/eq_no_29.png?raw=true), now ![](figures/eq_no_30.png?raw=true)
+The continuous action variable is the amount to save, given the income: ![](figures/eq_no_20.png?raw=true)
 
-The output from the transition function is the next state ![](figures/eq_no_31.png?raw=true) that follows after first being in a state ![](figures/eq_no_32.png?raw=true) and then taking action ![](figures/eq_no_33.png?raw=true): ![](figures/eq_no_34.png?raw=true), now ![](figures/eq_no_35.png?raw=true)
+The output from the transition function is the next state ![](figures/eq_no_21.png?raw=true) that follows after first being in a state ![](figures/eq_no_22.png?raw=true) and then taking action:  ![](figures/eq_no_23.png?raw=true)
 
-Reward function is the utility function ![](figures/eq_no_36.png?raw=true), now ![](figures/eq_no_37.png?raw=true)
+Reward function is the utility function ![](figures/eq_no_24.png?raw=true), or ![](figures/eq_no_25.png?raw=true)
 
 # Algorithmic details
 ## Discretize the state space
@@ -75,8 +77,11 @@ With Monte Carlo control, the continuous stochastic state variables have to be d
 ## Discretize the action space
 The action space is discretized to a finite number of actions.
 
-## The Monte Carlo control with exploring starts
-The algorithm, reproduced from Sutton & Barto (1998) chapter 5. is 
+## Monte Carlo control with exploring starts
+The algorithm, reproduced from Sutton & Barto (1998) chapter 5. 
 
 ![](figures/MC-ES.png?raw=true)
 
+For infinite horizon problems, this algorithm reduces to randomly sampling the state-action space.
+
+## Monte Carlo control with a soft policy

@@ -19,9 +19,9 @@ using namespace mc::plot;
  *
  *  This model represents the classic
  *
- *  \param param
+ *  @param param
  *
- *  \return return type
+ *  @retval return type
  */
 struct OptimalGrowthModel : Model{
 
@@ -39,9 +39,9 @@ struct OptimalGrowthModel : Model{
    *
    *  Detailed description
    *
-   *  \param param
+   *  @param param
    *
-   *  \return return type
+   *  @retval return type
    */
 
   OptimalGrowthModel(mat state_lim, double theta = 0.5, double alpha = 0.8, double df = 0.9){
@@ -111,12 +111,12 @@ typedef SoftPolicy<DiscretizedModel<OptimalGrowthModel> > OptimalGrowthSoftPolic
  *
  *  This function simulates one episode. note that this is only for the Monte Carlo control algorithm WITH EXPLORING STARTS.
  *
- *  \param discrete_model : The discretized model
- *  \param state          : The state where to start from
- *  \param action         : The randomly selected action to start with
- *  \param pol            : The policy function policy(state)
+ *  @param discrete_model : The discretized model
+ *  @param state          : The state where to start from
+ *  @param action         : The randomly selected action to start with
+ *  @param pol            : The policy function policy(state)
   *
- *  \return Tuple with all states, actions and returns that happened during the episode.
+ *  @retval Tuple with all states, actions and returns that happened during the episode.
  */
 tuple<uvec,uvec,vec> episode_es(const DiscretizedOptimalGrowthModel & discrete_model,  const size_t & state,  const size_t & action, const  uvec & pol) {
 
@@ -147,11 +147,11 @@ tuple<uvec,uvec,vec> episode_es(const DiscretizedOptimalGrowthModel & discrete_m
  *
  *  This function simulates one episode. Note that this is only for the Monte Carlo control algorithm WITH SOFT EPSILON POLICIES.
  *
- *  \param discrete_model : The discretized model
- *  \param start_state    : Starting state
- *  \param soft_pol       : Soft policy.
+ *  @param discrete_model : The discretized model
+ *  @param start_state    : Starting state
+ *  @param soft_pol       : Soft policy.
  *
- *  \return Tuple with all states, actions and returns that happened during the episode.
+ *  @retval Tuple with all states, actions and returns that happened during the episode.
  */
 tuple<uvec,uvec,vec> episode_soft_pol(const DiscretizedOptimalGrowthModel & discrete_model, size_t start_state, const OptimalGrowthSoftPolicy & soft_pol) {
 

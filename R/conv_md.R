@@ -1,3 +1,11 @@
+##  Replaces LaTex equations in a markdown file with .png images of the
+##   equations.
+##
+##  Modified version of https://github.com/muschellij2/latexreadme
+## 
+##  Run this script from the mc-control/R directory
+##
+##
 library(knitr)
 library(stringr)
 library(animation)
