@@ -226,19 +226,34 @@ namespace mc{
       }
     }
 
+    /*! Struct to hold possible actions and according probabilities for an action
+     *
+     */
     struct SoftStatePolicy{
       vec density; // Probability density for each possible action from this state
       uvec actions; // Possible actions from this state
 
       SoftStatePolicy(){};
       SoftStatePolicy(vec density, uvec actions) : density(density), actions(actions){};
+
+      /*! Draw an action according to the density (for this state)*/
       size_t sample(){
         return(actions(sample_discrete(this->density)));
       }
     };
 
+    /*! Soft policy
+     *
+     *
+     *  Holds the possible actions and probability densities for actions. Initializes each action with equal probability.
+     *
+     *  @param discrete_model the associated model for calculating possible actions
+     *
+     */
     template <typename DiscretizedModelT>
     struct SoftPolicy{
+
+      /*! Construtor Initializes each action with equal probability.*/
       SoftPolicy(const DiscretizedModelT & discrete_model){
         size_t nstates = discrete_model.state_space_size;
 

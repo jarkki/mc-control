@@ -6,7 +6,7 @@
 #include <armadillo>
 #include "mc-control/utils.hpp"
 #include "mc-control/distribution.hpp"
-#include "mc-control/problem.hpp"
+//#include "mc-control/model.hpp"
 
 using namespace std;
 using namespace arma;

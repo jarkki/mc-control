@@ -197,23 +197,25 @@ int main(int argc, char *argv[])
   uvec nbins = {30};
 
   // Initialize the actions
-  int nactions = 20;
-  vec actions = linspace(state_lim(0,0), state_lim(0,1), nactions);
+  int nactions = 10;
+  //vec actions = linspace(state_lim(0,0), state_lim(0,1), nactions);
+  vec actions = linspace(0.5, state_lim(0,1), nactions);
 
   // Create discretized model from the model
-  DiscretizedModel<OptimalGrowthModel> discrete_model(model, actions, nbins, 10000);
+  DiscretizedModel<OptimalGrowthModel> discrete_model(model, actions, nbins, 100000);
 
-  // // Plot the distributions
-  // plot_distr(discrete_model.distributions, discrete_model.actions);
+  // Plot the distributions
+  plot_distr(discrete_model.distributions, discrete_model.actions);
 
-  // Run the MC-ES algorithm
-  mat Q;
-  uvec pol;
-  tie(Q,pol) = run_mc_es(discrete_model, episode_es, 30000000);
-  // tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 30000000, 0.7);
+  // // Run the MC-ES algorithm
+  // mat Q;
+  // uvec pol;
+  // tie(Q,pol) = run_mc_es(discrete_model, episode_es, 30000000);
+  // // tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 30000000, 0.7);
 
-  // Plot the Q-values
-  plot_q(Q,pol,discrete_model);
+  // // Plot the Q-values
+  // plot_q(Q,pol,discrete_model);
+
 
   return 0;
 }
