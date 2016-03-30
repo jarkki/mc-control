@@ -1,6 +1,11 @@
 **mc-control** is a C++ library for solving stochastic dynamic optimization problems with *Monte Carlo optimal control*. It solves continuous state & continuous action problems by discretizing the continuous variables.
 
+Example discretized probability distribution for optimal saving problem:
+
 ![Discretized probability distribution](figures/discrete_density.png)
+
+Example Optimal policy for optimal savings problem:
+
 ![Optimal policy for optimal consumption problem](figures/optimal_policy.png)
 
 # Introduction
@@ -62,37 +67,62 @@ To discretize the state variable $y_t$, we go through these steps:
 
 (Note that since we have the density function available for the state variable, instead of sampling we could use the density function directly to discretize the space.)
 
-Let's discretize the state $y_t$ into 30 bins in the interval $[0.0,8.0]$ and action variable $k_t$ into 10 values. With 100k samples from $y_t$ the discrete approximation to the state-action density looks like this:
+# Implementation details
+Any model has to be derived from the base model struct:
 
-![Discretized probability distribution](figures/discrete_density.png)
+```c++
+   /*! Abstract base class for the models
+    *
+    */
+    struct Model{
 
-## Use Monte Carlo control with exploring starts
+    /*! next_state = f(state, action)*/
+    virtual vec transition(const vec & state, const double & action) const = 0;
+
+    /*! Samples the transition funciton n times*/
+    virtual mat sample_transitions(const double & action, size_t n) const = 0;
+
+    /*! Reward from being in a state, taking action and ending in next_state */
+    virtual double reward (const vec & state_value, const double & action_value, const vec & next_state_value) const = 0;
+
+    /*! Returns true if it is possible to take the action from this state */
+    virtual bool constraint(const double & action, const vec & state) const{
+    return true;
+    };
+    };
+```
+
+Then one of the two episode generating functions has to be implemented:
+```c++
+// For soft policies
+tuple<uvec,uvec,vec> episode_soft_pol(const DiscretizedOptimalGrowthModel & discrete_model,  const uvec & pol);
+
+// For exploring starts
+tuple<uvec,uvec,vec> episode_es(const DiscretizedOptimalGrowthModel & discrete_model,  const size_t & state,  const size_t & action, const  uvec & pol);
+```
+The episode generating functions returns a three-tuple of all actions, states and returns occurring during the episode.
+
+For a full example implementing the optimal savings model, see [examples/optgrowth.cpp](examples/optgrowth.cpp).
+
+
+<!-- Let's discretize the state $y_t$ into 30 bins in the interval $[0.0,8.0]$ and action variable $k_t$ into 10 values. With 100k samples from $y_t$ the discrete approximation to the state-action density looks like this: -->
+
+<!-- ![Discretized probability distribution](figures/discrete_density.png) -->
+
+# The two implemented algorithms
+See chapter 5. in [*Reinforcement learning: An introduction*](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html) for details.
+
+## Monte Carlo control with exploring starts
 The algorithm, reproduced from Sutton & Barto (1998) chapter 5. 
 
-![](figures/MC-ES.png?raw=true)
+![](figures/mc-es.png?raw=true)
 
 For infinite horizon problems, this algorithm reduces to randomly sampling the state-action space.
 
+## Monte Carlo control with an soft policy (epsilon greedy)
+
+![](figures/mc-eps-greedy.png?raw=true)
 
 
-<!-- ## Transforming the consumption model into reinforcement learning domain -->
-<!-- The Monte Carlo optimal control belongs to the group of reinforcement learning algorithms. In the reinforcement learning domain the properties of interest are the  -->
-
-<!-- 1. State space -->
-<!-- 2. Actions -->
-<!-- 3. Transition function -->
-<!-- 4. Reward function -->
-<!-- 5. Simulating an episode from the model -->
-
-<!-- The consumption model has a single continuous state variable: income $y_t$, now denoted as $s_t.$ -->
-
-<!-- The continuous action variable is the amount to save, given the income: $k_t = a(s_t).$ -->
-
-<!-- The output from the transition function is the next state $s_{t+!}$ that follows after first being in a state $s_t$ and then taking action:  $s_{t+1} = a(s_t)^{\alpha}W_{t+1}.$ -->
-
-<!-- Reward function is the utility function $U(c_t)$, or $U(s_t-a_t).$ -->
-
-# Algorithmic details
 
 
-## Monte Carlo control with a soft policy
