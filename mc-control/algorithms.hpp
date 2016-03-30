@@ -108,17 +108,15 @@ namespace mc{
         // Update policy to greedy policy
         for(auto state : episode_states){
           pol(state) = argmax_q(Q,state, possible_actions[state]);
-          );
-      }
+        };
 
-      // Print info
-      if(iteration % 10000 == 0 && iteration > 0){
-        cout << "Iteration " << iteration << endl;
+        // Print info
+        if(iteration % 10000 == 0 && iteration > 0){
+          cout << "Iteration " << iteration << endl;
+        }
       }
-
+      return make_tuple(Q, pol);
     }
-    return make_tuple(Q, pol);
-  }
 
 
     /*! Monte Carlo control with epsilon-soft policies.

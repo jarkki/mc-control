@@ -93,7 +93,7 @@ namespace mc{
 
       file.close();
 
-      system ("ipython plot.py");
+      system ("python plot.py");
 
 
     };
@@ -152,7 +152,7 @@ namespace mc{
 
       file.close();
 
-      system ("ipython plot.py");
+      system ("python plot.py");
 
 
     }
