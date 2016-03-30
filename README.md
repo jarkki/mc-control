@@ -1,12 +1,12 @@
 **mc-control** is a C++ library for solving stochastic dynamic optimization problems with *Monte Carlo optimal control*. It solves continuous state & continuous action problems by discretizing the continuous variables.
 
-Example discretized probability distribution for optimal savings problem (one state variable):
-
-![Discretized probability distribution](figures/discrete_density.png)
-
 Example value function contours with optimal policy for optimal savings problem:
 
 ![Optimal policy for optimal consumption problem](figures/optimal_policy.png)
+
+Example discretized probability distribution for optimal savings problem (one state variable):
+
+![Discretized probability distribution](figures/discrete_density.png)
 
 # Introduction
 The library implements the two on-policy algorithms (exploring starts, epsilon-soft policy) described in the 5th chapter of 
@@ -32,14 +32,13 @@ For plotting you also need
 
 * Python + numpy + [matplotlib](http://matplotlib.org/)
 
-If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
-
 ## Compilation
-`mc-control` is a header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example optimal savings model. Edit the [makefile](Makefile) if armadillo or boost is not found.
+`mc-control` is a header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example optimal savings model. 
 
+If the compiler cannot find Armadillo or Boost, edit the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
 
 # Example
-A classic example for a stochastic dynamic optimization problem in economics is the neoclassical consumption model where an agent splits her income into consumption and savings and seeks the savings policy that maximizes her expected discounted utility from consumption over an infinite time horizon:
+A classic example for a stochastic dynamic optimization problem in economics is the neoclassical consumption model with **stochastic** income. Agent splits her income into consumption and savings and seeks the savings policy that maximizes her expected discounted utility from consumption over an infinite time horizon:
 
 ![](figures/eq_no_11.png?raw=true)
 
@@ -74,18 +73,18 @@ For the optimal savings problem the Bellman equation represents the rewards/retu
 
 ![](figures/eq_no_22.png?raw=true).
 
-## Discretizing the state and action variables
-To discretize the state variable ![](figures/eq_no_23.png?raw=true), we go through these steps:
+<!-- ## Discretizing the state and action variables -->
+<!-- To discretize the state variable ![](figures/eq_no_23.png?raw=true), we go through these steps: -->
 
-1. Draw samples from the continuous distribution of state variable
-2. Divide the state space into bins and create discrete density(mass) function
-3. Create inverse cumulative distribution function form the discrete density function
-4. Use [inverse transform method](https://en.wikipedia.org/wiki/Inverse_transform_sampling) to sample from the resulting  discrete distribution
+<!-- 1. Draw samples from the continuous distribution of state variable -->
+<!-- 2. Divide the state space into bins and create discrete density(mass) function -->
+<!-- 3. Create inverse cumulative distribution function form the discrete density function -->
+<!-- 4. Use [inverse transform method](https://en.wikipedia.org/wiki/Inverse_transform_sampling) to sample from the resulting  discrete distribution -->
 
-(Note that since we have the density function available for the state variable, instead of sampling we could use the density function directly to discretize the space.)
+<!-- (Note that since we have the density function available for the state variable, instead of sampling we could use the density function directly to discretize the space.) -->
 
-# Implementation details
-Any model has to be derived from the base model struct:
+# C++ Implementation
+Any model has to be derived from the base model struct (in [mc-control/model.hpp](mc-control/model.hpp)):
 
 ```c++
 /*! Abstract base struct for the models
@@ -127,19 +126,13 @@ For a full example implementing the optimal savings model, see [examples/optgrow
 <!-- ![Discretized probability distribution](figures/discrete_density.png) -->
 
 # The two implemented algorithms
+
+1. Monte Carlo control with exploring starts (Figure 5.4 in Sutton & Barto)
+    - For infinite horizon problems (like the optimal savings problem), this algorithm reduces to randomly sampling the state-action space.
+2. Monte Carlo control with a soft policy (epsilon greedy) (Figure 5.6 in Sutton & Barto)
+
+Both algorithms are implemented in file [mc-control/algorithms.hpp](mc-control/algorithms.hpp).
+
 See chapter 5. in [*Reinforcement learning: An introduction*](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html) for details.
-
-## Monte Carlo control with exploring starts
-The algorithm, reproduced from Sutton & Barto (1998) chapter 5. 
-
-![](figures/mc-es.png?raw=true)
-
-For infinite horizon problems, this algorithm reduces to randomly sampling the state-action space.
-
-## Monte Carlo control with an soft policy (epsilon greedy)
-
-![](figures/mc-eps-greedy.png?raw=true)
-
-
 
 
