@@ -135,4 +135,8 @@ Both algorithms are implemented in file [mc-control/algorithms.hpp](mc-control/a
 
 See chapter 5. in [*Reinforcement learning: An introduction*](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html) for details.
 
+#License
 
+**mc-control** is made available under the terms of the GPLv3.
+
+See the LICENSE file that accompanies this distribution for the full text of the license.
