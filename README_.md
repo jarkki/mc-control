@@ -21,18 +21,15 @@ $\underset{\pi}{\text{max}} \ E \left[\sum_{t=0}^{T}\gamma^tR_{t}^{\pi}(S_t, A_t
 
 where $\pi$ is a policy function, $\gamma$ is a discount factor, $R$ is a reward function, $S$ is a stochastic state variable, $A^{\pi}(S)$ is an action taken by the agent when at state $S$, following the policy $\pi$. $t \in \{1,\ldots,T\}$ denotes the time period. The state variable $S_t$ is assumed to be Markovian, which is why problems of this type are often called *Markov Decision Processes*.
 
-## Curse of dimensionality
-Since the algorithm works with discretized state-action space, it cannot escape the curse of dimensionality rising from having large number of state variables.
-
 # Installation
 ## Dependencies
-This library depends on two other libraries:
+This library depends on three other libraries:
 
-* [Armadillo](http://arma.sourceforge.net) (for matrices, vectors and random number generation)
-* [Boost](http://www.boost.org/)     (for boost::irange range-based iterator)
+* [Armadillo](http://arma.sourceforge.net) for matrices, vectors and random number generation
+* [Boost](http://www.boost.org/) for boost::irange range-based iterator
 
-For plotting you need
-* Python + numpy + [matplotlib](http://matplotlib.org/) for plotting
+For plotting you also need
+* Python + numpy + [matplotlib](http://matplotlib.org/)
 
 If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
 

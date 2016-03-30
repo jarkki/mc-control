@@ -1,15 +1,15 @@
 **mc-control** is a C++ library for solving stochastic dynamic optimization problems with *Monte Carlo optimal control*. It solves continuous state & continuous action problems by discretizing the continuous variables.
 
-Example discretized probability distribution for optimal saving problem:
+Example discretized probability distribution for optimal savings problem (one state variable):
 
 ![Discretized probability distribution](figures/discrete_density.png)
 
-Example Optimal policy for optimal savings problem:
+Example value function contours with optimal policy for optimal savings problem:
 
 ![Optimal policy for optimal consumption problem](figures/optimal_policy.png)
 
 # Introduction
-The library implements the two on-policy algorithms (exploring starts, sigma-soft policy) described in the 5th chapter of 
+The library implements the two on-policy algorithms (exploring starts, epsilon-soft policy) described in the 5th chapter of 
 
 >Sutton, Richard S., and Andrew G. Barto. [*Reinforcement learning: An introduction*](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html). MIT press, 1998.
 
@@ -21,21 +21,20 @@ The optimization problem considered is the stochastic dynamic optimization probl
 
 where ![](figures/eq_no_02.png?raw=true) is a policy function, ![](figures/eq_no_03.png?raw=true) is a discount factor, ![](figures/eq_no_04.png?raw=true) is a reward function, ![](figures/eq_no_05.png?raw=true) is a stochastic state variable, ![](figures/eq_no_06.png?raw=true) is an action taken by the agent when at state ![](figures/eq_no_07.png?raw=true), following the policy ![](figures/eq_no_08.png?raw=true). ![](figures/eq_no_09.png?raw=true) denotes the time period. The state variable ![](figures/eq_no_10.png?raw=true) is assumed to be Markovian, which is why problems of this type are often called *Markov Decision Processes*.
 
-## Curse of dimensionality
-Since the algorithm works with discretized state-action space, it cannot escape the curse of dimensionality rising from having large number of state variables.
-
 # Installation
 ## Dependencies
-This library depends on two other libraries:
+This library depends on three other libraries:
 
-* [Armadillo](http://arma.sourceforge.net) (for matrices, vectors and random number generation)
-* [Boost](http://www.boost.org/)     (for boost::irange range-based iterator)
-* Python + numpy + [matplotlib](http://matplotlib.org/) for plotting
+* [Armadillo](http://arma.sourceforge.net) for matrices, vectors and random number generation
+* [Boost](http://www.boost.org/) for boost::irange range-based iterator
 
-If the compiler cannot find either of the libraries, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
+For plotting you also need
+* Python + numpy + [matplotlib](http://matplotlib.org/)
+
+If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
 
 ## Compilation
-`mc-control` is a header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example consumption model. Edit the [makefile](Makefile) if armadillo or boost is not found.
+`mc-control` is a header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example optimal savings model. Edit the [makefile](Makefile) if armadillo or boost is not found.
 
 
 # Example
@@ -57,6 +56,8 @@ with the action ![](figures/eq_no_15.png?raw=true) representing the amount to sa
 
 Popular choice for the shock is log-normal distribution ![](figures/eq_no_16.png?raw=true) For utility function, ![](figures/eq_no_17.png?raw=true).
 
+Implementation can be found here: [examples/optgrowth.cpp](examples/optgrowth.cpp).
+
 ## Discretizing the state and action variables
 To discretize the state variable ![](figures/eq_no_18.png?raw=true), we go through these steps:
 
@@ -71,10 +72,10 @@ To discretize the state variable ![](figures/eq_no_18.png?raw=true), we go throu
 Any model has to be derived from the base model struct:
 
 ```c++
-   /*! Abstract base class for the models
-    *
-    */
-    struct Model{
+/*! Abstract base struct for the models
+*
+*/
+struct Model{
 
     /*! next_state = f(state, action)*/
     virtual vec transition(const vec & state, const double & action) const = 0;
@@ -89,7 +90,7 @@ Any model has to be derived from the base model struct:
     virtual bool constraint(const double & action, const vec & state) const{
     return true;
     };
-    };
+};
 ```
 
 Then one of the two episode generating functions has to be implemented:
