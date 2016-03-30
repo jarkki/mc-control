@@ -17,11 +17,18 @@ using namespace mc::plot;
 /*! Optimal Growth model
  *
  *
- *  This model represents the classic
+ *  This model represents the neoclassical consumption model where an agent
+ *   splits her income into consumption and savings and seeks the savings
+ *   policy that maximizes her expected discounted utility from consumption
+ *   over an infinite time horizon.
+ *
+ *  See Stokey, Nancy, and R. Lucas. "Recursive Methods in Economic Dynamics" (1989).
  *
  *  @param param
  *
  *  @retval return type
+ *
+ *
  */
 struct OptimalGrowthModel : Model{
 
@@ -37,13 +44,12 @@ struct OptimalGrowthModel : Model{
   /*! Constructor
    *
    *
-   *  Detailed description
+   *  @param state_lim lower and upper bounds for the state variable
+   *  @param theta     risk-aversion factor for the utility function
+   *  @param alpha     parameter for the transition function
+   *  @param df        discount factor
    *
-   *  @param param
-   *
-   *  @retval return type
    */
-
   OptimalGrowthModel(mat state_lim, double theta = 0.5, double alpha = 0.8, double df = 0.9){
     this->nvariables = 1;
     this->theta = theta;
@@ -183,6 +189,12 @@ tuple<uvec,uvec,vec> episode_soft_pol(const DiscretizedOptimalGrowthModel & disc
   return make_tuple(states,actions,returns);
 }
 
+
+
+
+/*! Main
+ *
+ */
 int main(int argc, char *argv[])
 {
   // Seed the rng (randomly)
@@ -216,7 +228,6 @@ int main(int argc, char *argv[])
 
   // Plot the Q-values
   plot_q(Q,pol,discrete_model);
-
 
   return 0;
 }

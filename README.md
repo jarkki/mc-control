@@ -29,6 +29,7 @@ This library depends on three other libraries:
 * [Boost](http://www.boost.org/) for boost::irange range-based iterator
 
 For plotting you also need
+
 * Python + numpy + [matplotlib](http://matplotlib.org/)
 
 If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
@@ -56,10 +57,25 @@ with the action ![](figures/eq_no_15.png?raw=true) representing the amount to sa
 
 Popular choice for the shock is log-normal distribution ![](figures/eq_no_16.png?raw=true) For utility function, ![](figures/eq_no_17.png?raw=true).
 
+More details:
+- Stachurski, John. *Economic dynamics: theory and computation*. MIT Press, (2009).
+- Stokey, Nancy, and R. Lucas. *Recursive Methods in Economic Dynamics* Harvard University Press (1989).
+
 Implementation can be found here: [examples/optgrowth.cpp](examples/optgrowth.cpp).
 
+## Solving the dynamic problem
+Dynamic optimization problem such as the optimal consumption/savings can be solved with the help of the recursive [Bellman equation](https://en.wikipedia.org/wiki/Bellman_equation):
+
+![](figures/eq_no_18.png?raw=true)
+
+The Bellman equation represents the value ![](figures/eq_no_19.png?raw=true) of being in a state ![](figures/eq_no_20.png?raw=true) and following policy ![](figures/eq_no_21.png?raw=true).
+
+For the optimal savings problem the Bellman equation represents the rewards/returns as
+
+![](figures/eq_no_22.png?raw=true).
+
 ## Discretizing the state and action variables
-To discretize the state variable ![](figures/eq_no_18.png?raw=true), we go through these steps:
+To discretize the state variable ![](figures/eq_no_23.png?raw=true), we go through these steps:
 
 1. Draw samples from the continuous distribution of state variable
 2. Divide the state space into bins and create discrete density(mass) function
@@ -106,7 +122,7 @@ The episode generating functions returns a three-tuple of all actions, states an
 For a full example implementing the optimal savings model, see [examples/optgrowth.cpp](examples/optgrowth.cpp).
 
 
-<!-- Let's discretize the state ![](figures/eq_no_19.png?raw=true) into 30 bins in the interval ![](figures/eq_no_20.png?raw=true) and action variable ![](figures/eq_no_21.png?raw=true) into 10 values. With 100k samples from ![](figures/eq_no_22.png?raw=true) the discrete approximation to the state-action density looks like this: -->
+<!-- Let's discretize the state ![](figures/eq_no_24.png?raw=true) into 30 bins in the interval ![](figures/eq_no_25.png?raw=true) and action variable ![](figures/eq_no_26.png?raw=true) into 10 values. With 100k samples from ![](figures/eq_no_27.png?raw=true) the discrete approximation to the state-action density looks like this: -->
 
 <!-- ![Discretized probability distribution](figures/discrete_density.png) -->
 

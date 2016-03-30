@@ -17,7 +17,7 @@ While *approximate dynamic programming* methods like *fitted value iteration* ca
 
 The optimization problem considered is the stochastic dynamic optimization problem of finding a policy that maximizes the expected discounted rewards over either a finite or an infinite time horizon. The finite horizon problem is 
 
-$\underset{\pi}{\text{max}} \ E \left[\sum_{t=0}^{T}\gamma^tR_{t}^{\pi}(S_t, A_t^{\pi}(S_t))\right]$, 
+$\underset{\pi}{\text{max}} \ \mathbb{E} \left[\sum_{t=0}^{T}\gamma^tR_{t}^{\pi}(S_t, A_t^{\pi}(S_t))\right]$, 
 
 where $\pi$ is a policy function, $\gamma$ is a discount factor, $R$ is a reward function, $S$ is a stochastic state variable, $A^{\pi}(S)$ is an action taken by the agent when at state $S$, following the policy $\pi$. $t \in \{1,\ldots,T\}$ denotes the time period. The state variable $S_t$ is assumed to be Markovian, which is why problems of this type are often called *Markov Decision Processes*.
 
@@ -29,6 +29,7 @@ This library depends on three other libraries:
 * [Boost](http://www.boost.org/) for boost::irange range-based iterator
 
 For plotting you also need
+
 * Python + numpy + [matplotlib](http://matplotlib.org/)
 
 If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
@@ -40,9 +41,9 @@ If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile),
 # Example
 A classic example for a stochastic dynamic optimization problem in economics is the neoclassical consumption model where an agent splits her income into consumption and savings and seeks the savings policy that maximizes her expected discounted utility from consumption over an infinite time horizon:
 
-$\underset{k_t}{\text{max}} \ E \left[\sum_{t=0}^{\infty}\gamma^tU(c_t)\right]$
+$\underset{k_t}{\text{max}} \ \mathbb{E} \left[\sum_{t=0}^{\infty}\gamma^tU(c_t)\right]$
 
-$\Leftrightarrow \underset{k_t}{\text{max}} \ E \left[\sum_{t=0}^{\infty}\gamma^tU(y_t - a(y_t))\right],$
+$\Leftrightarrow \underset{k_t}{\text{max}} \ \mathbb{E} \left[\sum_{t=0}^{\infty}\gamma^tU(y_t - a(y_t))\right],$
 
 s.t.
 
@@ -56,7 +57,22 @@ with the action $k_t = a(y_t)$ representing the amount to save, given the income
 
 Popular choice for the shock is log-normal distribution $W \sim e^{N(0,1)}.$ For utility function, $U(c) = 1-e^{-\theta c}$.
 
+More details:
+- Stachurski, John. *Economic dynamics: theory and computation*. MIT Press, (2009).
+- Stokey, Nancy, and R. Lucas. *Recursive Methods in Economic Dynamics* Harvard University Press (1989).
+
 Implementation can be found here: [examples/optgrowth.cpp](examples/optgrowth.cpp).
+
+## Solving the dynamic problem
+Dynamic optimization problem such as the optimal consumption/savings can be solved with the help of the recursive [Bellman equation](https://en.wikipedia.org/wiki/Bellman_equation):
+
+$V_t^{\pi}(S_t) \  =  \ \underset{\pi}{\text{max}} \ R_t(S_t,a_t) + \gamma \mathbb{E}\left[V_{t+1}^{\pi}(S_{t+1}|S_t)\right]$
+
+The Bellman equation represents the value $V^{\pi}(s_t)$ of being in a state $s_t$ and following policy $\pi$.
+
+For the optimal savings problem the Bellman equation represents the rewards/returns as
+
+$R_t = U(s_t-a_t) + \gamma U(s_{t+1})$.
 
 ## Discretizing the state and action variables
 To discretize the state variable $y_t$, we go through these steps:
