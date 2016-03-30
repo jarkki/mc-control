@@ -1,15 +1,15 @@
 **mc-control** is a C++ library for solving stochastic dynamic optimization problems with *Monte Carlo optimal control*. It solves continuous state & continuous action problems by discretizing the continuous variables.
 
-Example discretized probability distribution for optimal saving problem:
+Example discretized probability distribution for optimal savings problem (one state variable):
 
 ![Discretized probability distribution](figures/discrete_density.png)
 
-Example Optimal policy for optimal savings problem:
+Example value function contours with optimal policy for optimal savings problem:
 
 ![Optimal policy for optimal consumption problem](figures/optimal_policy.png)
 
 # Introduction
-The library implements the two on-policy algorithms (exploring starts, sigma-soft policy) described in the 5th chapter of 
+The library implements the two on-policy algorithms (exploring starts, epsilon-soft policy) described in the 5th chapter of 
 
 >Sutton, Richard S., and Andrew G. Barto. [*Reinforcement learning: An introduction*](http://webdocs.cs.ualberta.ca/~sutton/book/the-book.html). MIT press, 1998.
 
@@ -30,12 +30,14 @@ This library depends on two other libraries:
 
 * [Armadillo](http://arma.sourceforge.net) (for matrices, vectors and random number generation)
 * [Boost](http://www.boost.org/)     (for boost::irange range-based iterator)
+
+For plotting you need
 * Python + numpy + [matplotlib](http://matplotlib.org/) for plotting
 
-If the compiler cannot find either of the libraries, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
+If the compiler cannot find Armadillo or Boost, modify the [makefile](Makefile), which has variables for custom header and library search paths for these libraries (boost is header only).
 
 ## Compilation
-`mc-control` is a header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example consumption model. Edit the [makefile](Makefile) if armadillo or boost is not found.
+`mc-control` is a header-only library and uses some c++11 features. Just run `make` in the root directory to compile the example optimal savings model. Edit the [makefile](Makefile) if armadillo or boost is not found.
 
 
 # Example
@@ -57,6 +59,8 @@ with the action $k_t = a(y_t)$ representing the amount to save, given the income
 
 Popular choice for the shock is log-normal distribution $W \sim e^{N(0,1)}.$ For utility function, $U(c) = 1-e^{-\theta c}$.
 
+Implementation can be found here: [examples/optgrowth.cpp](examples/optgrowth.cpp).
+
 ## Discretizing the state and action variables
 To discretize the state variable $y_t$, we go through these steps:
 
@@ -71,10 +75,10 @@ To discretize the state variable $y_t$, we go through these steps:
 Any model has to be derived from the base model struct:
 
 ```c++
-   /*! Abstract base class for the models
-    *
-    */
-    struct Model{
+/*! Abstract base struct for the models
+*
+*/
+struct Model{
 
     /*! next_state = f(state, action)*/
     virtual vec transition(const vec & state, const double & action) const = 0;
@@ -89,7 +93,7 @@ Any model has to be derived from the base model struct:
     virtual bool constraint(const double & action, const vec & state) const{
     return true;
     };
-    };
+};
 ```
 
 Then one of the two episode generating functions has to be implemented:
