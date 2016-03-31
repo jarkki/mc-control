@@ -242,8 +242,8 @@ int main(int argc, char *argv[])
   // Run the MC-ES algorithm
   mat Q;
   uvec pol;
-  // tie(Q,pol) = run_mc_es(discrete_model, episode_es, 5000000);
-  tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 60000000, 0.1);
+  tie(Q,pol) = run_mc_es(discrete_model, episode_es, 5000000);
+  //tie(Q,pol) = run_mc_eps_soft(discrete_model, episode_soft_pol, 60000000, 0.1);
 
   // Plot the Q-values
   plot_q(Q,pol,discrete_model);

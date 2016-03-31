@@ -127,9 +127,9 @@ For a full example implementing the optimal savings model, see [examples/optgrow
 
 # The two implemented algorithms
 
-1. Monte Carlo control with exploring starts (Figure 5.4 in Sutton & Barto)
+1. Monte Carlo control with exploring starts ([Figure 5.4](figures/mc-es.png) in Sutton & Barto)
     - For infinite horizon problems (like the optimal savings problem), this algorithm reduces to randomly sampling the state-action space.
-2. Monte Carlo control with a soft policy (epsilon greedy) (Figure 5.6 in Sutton & Barto)
+2. Monte Carlo control with a soft policy (epsilon greedy) ([Figure 5.6](figures/mc-soft-pol.png) in Sutton & Barto)
 
 Both algorithms are implemented in file [mc-control/algorithms.hpp](mc-control/algorithms.hpp).
 
