@@ -15,7 +15,7 @@ The library implements the two on-policy algorithms (exploring starts, epsilon-s
 
 The optimization problem considered is the stochastic dynamic optimization problem of finding a policy that maximizes the expected discounted rewards over either a finite or an infinite time horizon. The finite horizon problem is 
 
-$\underset{\pi}{\text{max}} \ \mathbb{E} \left[\sum_{t=0}^{T}\gamma^tR_{t}^{\pi}(S_t, A_t^{\pi}(S_t))\right]$, 
+$\underset{\pi}{\text{max}} \ \mathbb{E} \left[\sum\limits_{t=0}^{T}\gamma^tR_{t}^{\pi}(S_t, A_t^{\pi}(S_t))\right]$, 
 
 where $\pi$ is a policy function, $\gamma$ is a discount factor, $R$ is a reward function, $S$ is a stochastic state variable, $A^{\pi}(S)$ is an action taken by the agent when at state $S$, following the policy $\pi$. $t \in \{1,\ldots,T\}$ denotes the time period. The state variable $S_t$ is assumed to be Markovian, which is why problems of this type are often called *Markov Decision Processes*.
 
@@ -40,9 +40,9 @@ If the compiler cannot find Armadillo or Boost, edit the [makefile](Makefile), w
 # Example
 A classic example for a stochastic dynamic optimization problem in economics is the neoclassical consumption model with **stochastic** income. Agent splits her income into consumption and savings and seeks the savings policy that maximizes her expected discounted utility from consumption over an infinite time horizon:
 
-$\underset{k_t}{\text{max}} \ \mathbb{E} \left[\sum_{t=0}^{\infty}\gamma^tU(c_t)\right]$
+$\underset{k_t}{\text{max}} \ \mathbb{E} \left[\sum\limits_{t=0}^{\infty}\gamma^tU(c_t)\right]$
 
-$\Leftrightarrow \underset{k_t}{\text{max}} \ \mathbb{E} \left[\sum_{t=0}^{\infty}\gamma^tU(y_t - a(y_t))\right],$
+$\Leftrightarrow \underset{k_t}{\text{max}} \ \mathbb{E} \left[\sum\limits_{t=0}^{\infty}\gamma^tU(y_t - a(y_t))\right],$
 
 s.t.
 
@@ -127,9 +127,9 @@ For a full example implementing the optimal savings model, see [examples/optgrow
 
 # The two implemented algorithms
 
-1. Monte Carlo control with exploring starts (Figure 5.4 in Sutton & Barto)
+1. Monte Carlo control with exploring starts ([Figure 5.4](figures/mc-es.png) in Sutton & Barto)
     - For infinite horizon problems (like the optimal savings problem), this algorithm reduces to randomly sampling the state-action space.
-2. Monte Carlo control with a soft policy (epsilon greedy) (Figure 5.6 in Sutton & Barto)
+2. Monte Carlo control with a soft policy (epsilon greedy) ([Figure 5.6](figures/mc-soft-pol.png) in Sutton & Barto)
 
 Both algorithms are implemented in file [mc-control/algorithms.hpp](mc-control/algorithms.hpp).
 
