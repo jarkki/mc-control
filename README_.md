@@ -2,11 +2,11 @@
 
 Example value function contours with optimal policy for optimal savings problem:
 
-![Optimal policy for optimal consumption problem](figures/optimal_policy.png)
+![Optimal policy for optimal consumption problem](figures/optimal_policy.png?raw=true)
 
 Example discretized probability distribution for optimal savings problem (one state variable):
 
-![Discretized probability distribution](figures/discrete_density.png)
+![Discretized probability distribution](figures/discrete_density.png?raw=true)
 
 # Introduction
 The library implements the two on-policy algorithms (exploring starts, epsilon-soft policy) described in the 5th chapter of 
